@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+# Gerado todo dia por scripts/dados.mjs
+public/dados/
+.claude/
+# Nunca versionar dado bruto nem a revisão com nomes
+*.bruto.json
+revisao*.json
+.env*

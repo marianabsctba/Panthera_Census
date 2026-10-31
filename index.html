@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <!-- Tudo roda aqui: o navegador não conversa com nenhum outro servidor. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="theme-color" content="#0b0b0b" />
+    <meta name="description" content="O censo aberto do ransomware: o mundo inteiro, com o Brasil revisado à mão e nenhuma vítima identificada." />
+    <link rel="icon" type="image/webp" href="./pantera.webp" />
+    <link rel="apple-touch-icon" href="./icone-192.png" />
+    <title>Panthera Census</title>
+  </head>
+  <body>
+    <div id="raiz"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

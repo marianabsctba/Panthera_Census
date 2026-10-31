@@ -1,0 +1,13 @@
+{
+  "atualizado": "2026-10-31",
+  "total": 2177,
+  "ransomware": 535,
+  "anos": [
+    { "ano": "2021", "incidentes": 186, "ransomware": null },
+    { "ano": "2022", "incidentes": 275, "ransomware": null },
+    { "ano": "2023", "incidentes": 352, "ransomware": null },
+    { "ano": "2024", "incidentes": 333, "ransomware": null },
+    { "ano": "2025", "incidentes": 395, "ransomware": 86 },
+    { "ano": "2026", "incidentes": 636, "ransomware": 75 }
+  ]
+}
