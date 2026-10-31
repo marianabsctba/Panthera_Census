@@ -101,26 +101,28 @@ export function referenciasDoGrupo(perfil) {
 
 // Endereço puro: domínio, .onion ou IP, sem protocolo nem caminho que aponte para uma vítima.
 export const enderecoPuro = (texto) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?::\d{1,5})?$/.test(String(texto));
-export const TIPOS_DE_ENDERECO = ["Site de anúncio", "Chat", "Painel"];
+export const TIPOS_DE_ENDERECO = ["Site de anúncio", "Chat", "Painel", "Servidor de arquivos"];
 
-// Todos os endereços, no ar ou não, com o tipo. Servidores de arquivos ficam à parte.
+// No ar primeiro, depois por tipo. Quem não foi verificado (null) fica com os fora do ar.
+export const ordenarEnderecos = (lista) =>
+  [...lista].sort((a, b) =>
+    Number(b.ar === true) - Number(a.ar === true)
+    || TIPOS_DE_ENDERECO.indexOf(a.t) - TIPOS_DE_ENDERECO.indexOf(b.t)
+    || a.e.localeCompare(b.e));
+
+// Todos os endereços, no ar ou não, com o tipo.
 export function lerLocais(locais) {
   const enderecos = new Map();
-  const arquivos = new Set();
   for (const l of locais ?? []) {
     const e = String(l.fqdn ?? "").trim().toLowerCase();
     if (!enderecoPuro(e)) continue;
-    if (l.fs) {
-      arquivos.add(e);
-      continue;
-    }
     const visto = /^\d{4}-\d{2}-\d{2}/.test(String(l.updated)) ? String(l.updated).slice(0, 10) : null;
-    const item = { e, t: l.chat ? "Chat" : l.admin ? "Painel" : "Site de anúncio", ar: l.available === true, visto };
+    const t = l.fs ? "Servidor de arquivos" : l.chat ? "Chat" : l.admin ? "Painel" : "Site de anúncio";
+    const item = { e, t, ar: l.available === true, visto };
     const atual = enderecos.get(e);
     if (!atual || (item.ar && !atual.ar)) enderecos.set(e, item);
   }
-  const lista = [...enderecos.values()].sort((a, b) => Number(b.ar) - Number(a.ar) || a.e.localeCompare(b.e));
-  return { enderecos: lista, arquivos: [...arquivos] };
+  return ordenarEnderecos([...enderecos.values()]);
 }
 
 export const nomeExato = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]/g, "");

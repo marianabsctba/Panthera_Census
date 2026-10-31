@@ -106,9 +106,9 @@ describe("agregar", () => {
     expect(g.nomeRansomLook).toBeNull();
   });
 
-  it("lê todos os endereços, no ar ou não, e só conta os servidores de arquivos", () => {
+  it("lê todos os endereços, no ar ou não, com o tipo de cada um", () => {
     const onion = (c) => `${c.repeat(56)}.onion`;
-    const { enderecos, arquivos } = lerLocais([
+    const enderecos = lerLocais([
       { fqdn: onion("a"), available: false, updated: "2024-01-02 10:00:00" },
       { fqdn: onion("b"), available: true, updated: "2026-10-01 10:00:00" },
       { fqdn: onion("c"), available: true, fs: true },
@@ -120,13 +120,13 @@ describe("agregar", () => {
     expect(enderecos.map((x) => [x.e, x.t, x.ar])).toEqual([
       [onion("b"), "Site de anúncio", true],
       [onion("e"), "Painel", true],
+      [onion("c"), "Servidor de arquivos", true],
       ["31.41.244.10", "Site de anúncio", false],
       [onion("a"), "Site de anúncio", false],
       [onion("d"), "Chat", false],
     ]);
     expect(enderecos.find((x) => x.e === onion("a")).visto).toBe("2024-01-02");
     expect(enderecos.find((x) => x.e === onion("d")).visto).toBeNull();
-    expect(arquivos).toEqual([onion("c")]);
   });
 
   it("publica a lista de todos os grupos e tira o que coincide com site de vítima", () => {
@@ -135,11 +135,11 @@ describe("agregar", () => {
     const saida = agregar({
       registros, correcoes: {}, chave: null, pais, anpd,
       enderecos: { verificado: "2026-10-31", grupos: {
-        "grupo sem perfil": { arquivos: 2, enderecos: [item("aaa.onion"), item("vitima-ficticia.example")] },
-        "grupo vazio": { arquivos: 0, enderecos: [] },
+        "grupo sem perfil": { enderecos: [item("aaa.onion"), item("vitima-ficticia.example")] },
+        "grupo vazio": { enderecos: [] },
       } },
     });
-    expect(saida.listaDeEnderecos).toEqual([{ nome: "grupo sem perfil", arquivos: 2, enderecos: [item("aaa.onion")] }]);
+    expect(saida.listaDeEnderecos).toEqual([{ nome: "grupo sem perfil", enderecos: [item("aaa.onion")] }]);
     expect(saida.resumo.enderecosVerificados).toBe("2026-10-31");
   });
 
@@ -253,14 +253,15 @@ describe("trava", () => {
     const onion = `${"a".repeat(56)}.onion`;
     const comEndereco = (item) => {
       const saida = limpa();
-      saida.listaDeEnderecos = [{ nome: "grupo-a", arquivos: 0, enderecos: [item] }];
+      saida.listaDeEnderecos = [{ nome: "grupo-a", enderecos: [item] }];
       return validarSaida(saida, permitidos);
     };
     const bom = { e: onion, t: "Chat", ar: false, visto: "2024-01-02" };
     expect(comEndereco(bom)).toEqual([]);
+    expect(comEndereco({ ...bom, t: "Servidor de arquivos", ar: null, visto: null })).toEqual([]);
     expect(comEndereco({ ...bom, e: `http://${onion}/vitima-ficticia` }).length).toBeGreaterThan(0);
     expect(comEndereco({ ...bom, e: `${onion}/vitima-ficticia` }).length).toBeGreaterThan(0);
-    expect(comEndereco({ ...bom, t: "Servidor de arquivos" }).length).toBeGreaterThan(0);
+    expect(comEndereco({ ...bom, t: "Tipo inventado" }).length).toBeGreaterThan(0);
     expect(comEndereco({ ...bom, titulo: "Empresa Ficticia" }).length).toBeGreaterThan(0);
     const fora = limpa();
     fora.grupos[0].outroNome = onion;

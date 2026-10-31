@@ -320,8 +320,8 @@ export function agregar({ registros, correcoes, chave, pais, anpd, referencias =
   // Todos os grupos da lista, com ou sem perfil aqui. Endereço igual ao site de uma vítima não entra.
   const sitesDeVitimas = new Set(registros.map((x) => String(x.website ?? "").toLowerCase().trim().replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0]).filter(Boolean));
   const listaDeEnderecos = Object.entries(enderecos.grupos)
-    .map(([nome, g]) => ({ nome, arquivos: g.arquivos, enderecos: g.enderecos.filter((x) => !sitesDeVitimas.has(x.e)) }))
-    .filter((g) => g.enderecos.length > 0 || g.arquivos > 0);
+    .map(([nome, g]) => ({ nome, enderecos: g.enderecos.filter((x) => !sitesDeVitimas.has(x.e)) }))
+    .filter((g) => g.enderecos.length > 0);
 
   const usoDeFerramentas = matrizes.ferramentas
     .map((f) => ({ nome: f.nome, categoria: f.categoria, grupos: new Set(f.grupos.map(nomeDeGrupo)).size }))

@@ -5,7 +5,7 @@ import { data, inteiro, nomeDoMes } from "./formato";
 import Secao from "./Secao";
 import type { Endereco, EnderecosDoGrupo, Grupo, Resumo } from "./tipos";
 
-const AVISO_ENDERECOS = "Sites de grupos são operados por criminosos e podem ter dados roubados, inclusive de saúde e de crianças. Só para pesquisa legítima: acesse em ambiente isolado, não baixe nada e não contate o grupo. Abrir ou guardar dados roubados pode ter consequências legais. Os endereços ficam sem link de propósito, para ninguém cair lá por um clique.";
+const AVISO_ENDERECOS = "Sites de grupos são operados por criminosos. Os servidores de arquivos costumam guardar os próprios dados roubados, inclusive de saúde e de crianças. Só para pesquisa legítima: acesse em ambiente isolado, não baixe nada e não contate o grupo. Abrir ou guardar dados roubados pode ter consequências legais. Os endereços ficam sem link de propósito, para ninguém cair lá por um clique.";
 
 function LinhaEndereco({ item }: { item: Endereco }) {
   const [copiado, setCopiado] = useState(false);
@@ -18,7 +18,7 @@ function LinhaEndereco({ item }: { item: Endereco }) {
   return (
     <div className="endereco">
       <code>{item.e}</code>
-      <span className={item.ar ? "estado-ar no-ar" : "estado-ar"}>{item.ar ? "No ar" : "Fora do ar"}</span>
+      <span className={item.ar ? "estado-ar no-ar" : "estado-ar"}>{item.ar === null ? "Não verificado" : item.ar ? "No ar" : "Fora do ar"}</span>
       <span className="nota">{item.t}{item.visto ? `, visto em ${data(item.visto)}` : ""}</span>
       <button className="aba" onClick={copiar}>{copiado ? "Copiado" : "Copiar"}</button>
     </div>
@@ -29,7 +29,6 @@ function ListaEnderecos({ grupo }: { grupo: EnderecosDoGrupo }) {
   return (
     <div className="enderecos">
       {grupo.enderecos.map((item) => <LinhaEndereco key={item.e} item={item} />)}
-      {grupo.arquivos > 0 && <p className="nota">Mais {inteiro(grupo.arquivos)} servidores de arquivos, listados só na ficha do RansomLook.</p>}
     </div>
   );
 }
@@ -37,17 +36,30 @@ function ListaEnderecos({ grupo }: { grupo: EnderecosDoGrupo }) {
 function Enderecos({ lista, verificado }: { lista: EnderecosDoGrupo[]; verificado: string | null }) {
   const [busca, setBusca] = useState("");
   const [quantos, setQuantos] = useState(30);
+  const [tipo, setTipo] = useState("");
   const termo = busca.trim().toLowerCase();
-  const achados = lista.filter((g) => !termo || g.nome.toLowerCase().includes(termo) || g.enderecos.some((x) => x.e.includes(termo)));
+  const achados = lista
+    .map((g) => ({ ...g, enderecos: g.enderecos.filter((x) => !tipo || x.t === tipo) }))
+    .filter((g) => g.enderecos.length > 0 && (!termo || g.nome.toLowerCase().includes(termo) || g.enderecos.some((x) => x.e.includes(termo))));
   const total = lista.reduce((s, g) => s + g.enderecos.length, 0);
   const noAr = lista.reduce((s, g) => s + g.enderecos.filter((x) => x.ar).length, 0);
+  const servidores = lista.reduce((s, g) => s + g.enderecos.filter((x) => x.t === "Servidor de arquivos").length, 0);
   return (
     <div className="cartao" id="enderecos">
       <h3>Endereços de todos os grupos</h3>
-      <p className="nota">{inteiro(total)} endereços de {inteiro(lista.length)} grupos, {inteiro(noAr)} no ar, incluindo grupos antigos e sem perfil aqui. Fonte: <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0){verificado ? `, atualizado em ${data(verificado)}` : ""}.</p>
+      <p className="nota">{inteiro(total)} endereços de {inteiro(lista.length)} grupos, {inteiro(noAr)} confirmados no ar e {inteiro(servidores)} servidores de arquivos, incluindo grupos antigos e sem perfil aqui. Fonte: <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0){verificado ? `, atualizado em ${data(verificado)}` : ""}.</p>
       <p className="aviso">{AVISO_ENDERECOS}</p>
       <label className="sr" htmlFor="busca-endereco">Buscar grupo ou endereço</label>
-      <input id="busca-endereco" className="campo" type="search" placeholder="Buscar grupo ou endereço" value={busca} onChange={(ev) => { setBusca(ev.target.value); setQuantos(30); }} />
+      <div className="filtros">
+        <input id="busca-endereco" className="campo" type="search" placeholder="Buscar grupo ou endereço" value={busca} onChange={(ev) => { setBusca(ev.target.value); setQuantos(30); }} />
+        <select className="campo" aria-label="Tipo de endereço" value={tipo} onChange={(ev) => { setTipo(ev.target.value); setQuantos(30); }}>
+          <option value="">Todos os tipos</option>
+          <option>Site de anúncio</option>
+          <option>Chat</option>
+          <option>Painel</option>
+          <option>Servidor de arquivos</option>
+        </select>
+      </div>
       <div className="lista-enderecos">
         {achados.slice(0, quantos).map((g) => (
           <div key={g.nome}>

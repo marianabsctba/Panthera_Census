@@ -129,12 +129,11 @@ export interface Grupo {
 export interface Endereco {
   e: string;
   t: string;
-  ar: boolean;
+  ar: boolean | null;
   visto: string | null;
 }
 
 export interface EnderecosDoGrupo {
   nome: string;
-  arquivos: number;
   enderecos: Endereco[];
 }

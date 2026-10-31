@@ -316,7 +316,7 @@ function Conteudo({ r, grupos }: { r: Resumo; grupos: Grupo[] }) {
           <li>Quem paga o resgate tende a não aparecer em site de vazamento, então a base mostra só uma parte dos ataques.</li>
           <li>País e setor vêm da fonte e têm erros. Na leitura dos casos do Brasil, cerca de 8% eram de outro país e 18% estavam no setor errado. Quando a informação falta, fica como não informado.</li>
           <li>O site mostra apenas números somados. Nomes, sites e links de vítimas ficam fora dele e do repositório.</li>
-          <li>Grupos são citados pelo nome porque são os autores das alegações. Para pesquisa, o site lista os endereços de anúncio, chat e painel dos grupos, no ar ou não. Servidores de arquivos, contatos e carteiras ficam de fora.</li>
+          <li>Grupos são citados pelo nome porque são os autores das alegações. Para pesquisa, o site lista os endereços dos grupos, no ar ou não, inclusive servidores de arquivos, sempre sem link. Contatos e carteiras ficam de fora.</li>
           <li>Países com mais empresas aparecem mais. Por isso, o mapa também mede por habitante e por PIB.</li>
         </ul>
       </Secao>

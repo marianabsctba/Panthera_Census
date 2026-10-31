@@ -40,7 +40,7 @@ export function validarSaida(saida, { grupos, paises, ferramentas = [], produtos
           for (const item of v) {
             const chaves = Object.keys(item).sort().join();
             const visto = item.visto === null || /^\d{4}-\d{2}-\d{2}$/.test(item.visto);
-            if (chaves !== "ar,e,t,visto" || !enderecoPuro(item.e) || !TIPOS_DE_ENDERECO.includes(item.t) || typeof item.ar !== "boolean" || !visto) {
+            if (chaves !== "ar,e,t,visto" || !enderecoPuro(item.e) || !TIPOS_DE_ENDERECO.includes(item.t) || ![true, false, null].includes(item.ar) || !visto) {
               erros.push(`endereço fora do formato em ${caminho}`);
             }
           }
