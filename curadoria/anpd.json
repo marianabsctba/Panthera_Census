@@ -3,11 +3,127 @@
   "total": 2177,
   "ransomware": 535,
   "anos": [
-    { "ano": "2021", "incidentes": 186, "ransomware": null },
-    { "ano": "2022", "incidentes": 275, "ransomware": null },
-    { "ano": "2023", "incidentes": 352, "ransomware": null },
-    { "ano": "2024", "incidentes": 333, "ransomware": null },
+    { "ano": "2021", "incidentes": 186, "ransomware": 65 },
+    { "ano": "2022", "incidentes": 275, "ransomware": 99 },
+    { "ano": "2023", "incidentes": 352, "ransomware": 131 },
+    { "ano": "2024", "incidentes": 333, "ransomware": 79 },
     { "ano": "2025", "incidentes": 395, "ransomware": 86 },
     { "ano": "2026", "incidentes": 636, "ransomware": 75 }
-  ]
+  ],
+  "tipos": [
+    ["Exploração de vulnerabilidade", 398],
+    ["Ransomware sem transferência de dados", 319],
+    ["Roubo de credenciais e engenharia social", 305],
+    ["Ransomware com transferência ou publicação de dados", 216],
+    ["Acesso não autorizado", 203],
+    ["Divulgação indevida de dados pessoais", 155],
+    ["Outro incidente cibernético", 150],
+    ["Publicação não intencional de dados pessoais", 100],
+    ["Outro incidente não cibernético", 94],
+    ["Envio de dados a destinatário incorreto", 80],
+    ["Perda ou roubo de documentos e dispositivos", 38],
+    ["Falha em software", 32],
+    ["Força bruta contra credencial", 24],
+    ["Denúncia ou petição de titular", 13],
+    ["Vírus e malware", 12],
+    ["Em apuração", 10],
+    ["Alteração ou exclusão não autorizada", 8],
+    ["Não informado", 7],
+    ["Descarte incorreto", 5],
+    ["Falha em hardware", 4],
+    ["Negação de serviço", 4]
+  ],
+  "segmentos": [
+    { "nome": "Cartórios", "total": 36, "ransomware": 5, "comTransferencia": 0, "semTransferencia": 5, "sensiveis": 3 },
+    { "nome": "Comércio", "total": 218, "ransomware": 62, "comTransferencia": 23, "semTransferencia": 39, "sensiveis": 20 },
+    { "nome": "Educação", "total": 128, "ransomware": 28, "comTransferencia": 9, "semTransferencia": 19, "sensiveis": 27 },
+    { "nome": "Entretenimento", "total": 33, "ransomware": 7, "comTransferencia": 5, "semTransferencia": 2, "sensiveis": 4 },
+    { "nome": "Estrangeiro", "total": 97, "ransomware": 21, "comTransferencia": 13, "semTransferencia": 8, "sensiveis": 12 },
+    { "nome": "Fábricas e indústrias", "total": 151, "ransomware": 74, "comTransferencia": 32, "semTransferencia": 42, "sensiveis": 34 },
+    { "nome": "Financeiro", "total": 164, "ransomware": 19, "comTransferencia": 11, "semTransferencia": 8, "sensiveis": 13 },
+    { "nome": "Governamental", "total": 490, "ransomware": 58, "comTransferencia": 17, "semTransferencia": 41, "sensiveis": 121 },
+    { "nome": "Imobiliário", "total": 35, "ransomware": 8, "comTransferencia": 2, "semTransferencia": 6, "sensiveis": 4 },
+    { "nome": "Laboratórios", "total": 2, "ransomware": 0, "comTransferencia": 0, "semTransferencia": 0, "sensiveis": 1 },
+    { "nome": "Outros", "total": 336, "ransomware": 118, "comTransferencia": 59, "semTransferencia": 59, "sensiveis": 77 },
+    { "nome": "Saúde", "total": 224, "ransomware": 48, "comTransferencia": 12, "semTransferencia": 36, "sensiveis": 117 },
+    { "nome": "Tecnologia", "total": 195, "ransomware": 60, "comTransferencia": 19, "semTransferencia": 41, "sensiveis": 29 },
+    { "nome": "Transporte", "total": 57, "ransomware": 26, "comTransferencia": 14, "semTransferencia": 12, "sensiveis": 17 }
+  ],
+  "setores": [
+    { "nome": "Privado", "total": 1612, "ransomware": 473, "comTransferencia": 198, "semTransferencia": 275, "sensiveis": 341 },
+    { "nome": "Público", "total": 548, "ransomware": 60, "comTransferencia": 17, "semTransferencia": 43, "sensiveis": 140 },
+    { "nome": "Misto", "total": 8, "ransomware": 1, "comTransferencia": 1, "semTransferencia": 0, "sensiveis": 1 }
+  ],
+  "estados": [
+    { "nome": "São Paulo", "total": 739, "ransomware": 203, "comTransferencia": 86, "semTransferencia": 117, "sensiveis": 135 },
+    { "nome": "Rio de Janeiro", "total": 201, "ransomware": 57, "comTransferencia": 32, "semTransferencia": 25, "sensiveis": 51 },
+    { "nome": "Minas Gerais", "total": 144, "ransomware": 39, "comTransferencia": 14, "semTransferencia": 25, "sensiveis": 35 },
+    { "nome": "Distrito Federal", "total": 315, "ransomware": 28, "comTransferencia": 10, "semTransferencia": 18, "sensiveis": 70 },
+    { "nome": "Rio Grande do Sul", "total": 87, "ransomware": 27, "comTransferencia": 12, "semTransferencia": 15, "sensiveis": 23 },
+    { "nome": "Paraná", "total": 106, "ransomware": 23, "comTransferencia": 4, "semTransferencia": 19, "sensiveis": 29 },
+    { "nome": "Estrangeira", "total": 107, "ransomware": 22, "comTransferencia": 14, "semTransferencia": 8, "sensiveis": 17 },
+    { "nome": "Pernambuco", "total": 61, "ransomware": 21, "comTransferencia": 4, "semTransferencia": 17, "sensiveis": 23 },
+    { "nome": "Santa Catarina", "total": 104, "ransomware": 20, "comTransferencia": 4, "semTransferencia": 16, "sensiveis": 24 },
+    { "nome": "Espírito Santo", "total": 49, "ransomware": 16, "comTransferencia": 5, "semTransferencia": 11, "sensiveis": 16 },
+    { "nome": "Bahia", "total": 59, "ransomware": 12, "comTransferencia": 3, "semTransferencia": 9, "sensiveis": 11 },
+    { "nome": "Ceará", "total": 35, "ransomware": 12, "comTransferencia": 2, "semTransferencia": 10, "sensiveis": 6 },
+    { "nome": "Goiás", "total": 34, "ransomware": 10, "comTransferencia": 4, "semTransferencia": 6, "sensiveis": 12 },
+    { "nome": "Mato Grosso do Sul", "total": 18, "ransomware": 8, "comTransferencia": 4, "semTransferencia": 4, "sensiveis": 7 },
+    { "nome": "Mato Grosso", "total": 21, "ransomware": 7, "comTransferencia": 3, "semTransferencia": 4, "sensiveis": 11 },
+    { "nome": "Pará", "total": 10, "ransomware": 6, "comTransferencia": 2, "semTransferencia": 4, "sensiveis": 0 },
+    { "nome": "Alagoas", "total": 11, "ransomware": 4, "comTransferencia": 1, "semTransferencia": 3, "sensiveis": 2 },
+    { "nome": "Rio Grande do Norte", "total": 8, "ransomware": 4, "comTransferencia": 2, "semTransferencia": 2, "sensiveis": 1 },
+    { "nome": "Sergipe", "total": 10, "ransomware": 4, "comTransferencia": 4, "semTransferencia": 0, "sensiveis": 0 },
+    { "nome": "Amazonas", "total": 9, "ransomware": 3, "comTransferencia": 0, "semTransferencia": 3, "sensiveis": 4 },
+    { "nome": "Piauí", "total": 7, "ransomware": 2, "comTransferencia": 1, "semTransferencia": 1, "sensiveis": 0 },
+    { "nome": "Rondônia", "total": 7, "ransomware": 2, "comTransferencia": 2, "semTransferencia": 0, "sensiveis": 0 },
+    { "nome": "Tocantins", "total": 4, "ransomware": 2, "comTransferencia": 1, "semTransferencia": 1, "sensiveis": 1 },
+    { "nome": "Acre", "total": 1, "ransomware": 1, "comTransferencia": 1, "semTransferencia": 0, "sensiveis": 0 },
+    { "nome": "Amapá", "total": 2, "ransomware": 1, "comTransferencia": 1, "semTransferencia": 0, "sensiveis": 1 },
+    { "nome": "Maranhão", "total": 9, "ransomware": 1, "comTransferencia": 0, "semTransferencia": 1, "sensiveis": 2 },
+    { "nome": "Paraíba", "total": 9, "ransomware": 0, "comTransferencia": 0, "semTransferencia": 0, "sensiveis": 2 },
+    { "nome": "Não informado", "total": 10, "ransomware": 0, "comTransferencia": 0, "semTransferencia": 0, "sensiveis": 0 }
+  ],
+  "sensiveis": [
+    ["Não", 1564],
+    ["Sim", 484],
+    ["Não informado", 67],
+    ["Em apuração", 62]
+  ],
+  "processos": [
+    ["Em apuração", 58],
+    ["Encerrado, não era incidente comunicável", 23],
+    ["Encaminhado para tratamento", 18],
+    ["Encerrado, incidente comunicado", 7],
+    ["Em tramitação interna", 5]
+  ],
+  "ultimoAno": {
+    "ano": "2026",
+    "comunicacao": [
+      ["Complementar", 254],
+      ["Preliminar", 225],
+      ["Completa", 155],
+      ["Não informado", 2]
+    ],
+    "impacto": [
+      ["Superável sem dificuldade", 327],
+      ["Superável com certa dificuldade", 225],
+      ["Superável com muita dificuldade", 39],
+      ["Não informado", 34],
+      ["Significativo", 11]
+    ],
+    "criancas": [
+      ["Não", 380],
+      ["Em apuração", 110],
+      ["Não informado", 74],
+      ["Sim", 72]
+    ],
+    "titulares": [
+      ["Sim", 391],
+      ["Não, risco sendo apurado", 122],
+      ["Não, mas está em andamento", 79],
+      ["Não, por não haver risco", 41],
+      ["Não informado", 3]
+    ]
+  }
 }

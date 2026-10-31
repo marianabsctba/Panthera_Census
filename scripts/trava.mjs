@@ -1,5 +1,6 @@
 // A trava: o que sai só passa se cada texto for conhecido e cada recorte tiver K casos ou mais.
 import { K, OUTROS, TODOS_OS_SETORES } from "./agregar.mjs";
+import { DIAS, FAIXAS, NOMES_CATEGORIAS, NOMES_SITUACOES } from "./texto.mjs";
 
 const FORMATOS = [
   /^\d{4}$/, // ano
@@ -7,12 +8,22 @@ const FORMATOS = [
   /^\d{4} T[1-4]$/, // trimestre
   /^[A-Z]{2}$/, // sigla de país
   /^\d{3}$/, // código numérico de país
+  /^CVE-\d{4}-\d{4,7}$/, // vulnerabilidade
 ];
+const FIXOS = [...TODOS_OS_SETORES, OUTROS, ...DIAS, ...Object.values(FAIXAS).flat(), ...NOMES_CATEGORIAS, ...NOMES_SITUACOES];
 
-// Só nomes de grupo, de país e de setor podem aparecer como texto. Não existe lista de "nomes
-// proibidos": o que não está autorizado para a publicação, inclusive qualquer vítima.
-export function validarSaida(saida, { grupos, paises }) {
-  const permitidos = new Set([...grupos, ...paises, ...TODOS_OS_SETORES, OUTROS]);
+function recolher(valor, conjunto) {
+  if (typeof valor === "string") conjunto.add(valor);
+  else if (Array.isArray(valor)) valor.forEach((v) => recolher(v, conjunto));
+  else if (valor && typeof valor === "object") Object.values(valor).forEach((v) => recolher(v, conjunto));
+  return conjunto;
+}
+
+// Só nomes de grupo, de país, de setor, de ferramenta e os textos oficiais da ANPD podem aparecer.
+// Não existe lista de "nomes proibidos": o que não está autorizado não sai, inclusive qualquer vítima.
+export function validarSaida(saida, { grupos, paises, ferramentas = [], produtos = [], categorias = [] }) {
+  const permitidos = new Set([...grupos, ...paises, ...ferramentas, ...produtos, ...categorias, ...FIXOS]);
+  recolher(saida.resumo.anpd, permitidos);
   const erros = [];
   const percorrer = (valor, caminho) => {
     if (typeof valor === "string") {
@@ -25,15 +36,26 @@ export function validarSaida(saida, { grupos, paises }) {
   };
   percorrer(saida, "saida");
 
-  for (const p of saida.paises) {
-    if (p.n < K) erros.push(`país abaixo de ${K}: ${p.cc}`);
-    for (const lista of [p.setores, p.grupos, p.trimestres]) {
-      for (const [, n] of lista) if (n < K) erros.push(`recorte abaixo de ${K} em ${p.cc}`);
+  const conferir = (lista, onde) => {
+    for (const item of lista) if (item[1] < K) erros.push(`recorte abaixo de ${K} em ${onde}`);
+  };
+  for (const [nome, p] of Object.entries(saida.periodos)) {
+    for (const pais of p.paises) {
+      if (pais.n < K) erros.push(`país abaixo de ${K} em ${nome}`);
+      for (const lista of [pais.setores, pais.grupos, pais.trimestres]) conferir(lista, `${nome}/${pais.cc}`);
     }
+    for (const s of p.setores) if (s.n < K) erros.push(`setor abaixo de ${K} em ${nome}`);
+    for (const lista of Object.values(p.mapaSetor)) conferir(lista, `${nome}/mapa`);
+    conferir(p.grupos.mundo, nome);
+    conferir(p.grupos.brasil, nome);
+    conferir(p.tempo.atraso, nome);
+    conferir(p.tempo.semana, nome);
+    conferir(p.textos.dados, nome);
+    for (const bloco of [p.textos.volume, p.textos.faturamento, p.textos.funcionarios, p.textos.situacao]) conferir(bloco.faixas, nome);
   }
-  for (const s of saida.setores) if (s.n < K) erros.push(`setor abaixo de ${K}: ${s.setor}`);
-  for (const lista of [saida.grupos.mundo, saida.grupos.brasil]) {
-    for (const [, n] of lista) if (n < K) erros.push(`grupo abaixo de ${K}`);
+  for (const g of saida.grupos) {
+    if (g.total < K) erros.push(`grupo abaixo de ${K}`);
+    for (const lista of [g.setores, g.paises, g.anos]) conferir(lista, "perfil de grupo");
   }
   return erros;
 }
@@ -52,7 +74,7 @@ export function validarCorrecoes(correcoes) {
 }
 
 // Endereços que o projeto cita como fonte ou crédito, e que também podem constar como alegação.
-const INSTITUCIONAIS = new Set(["gov.br", "github.com", "ransomware.live", "naturalearthdata.com", "unlicense.org", "gnu.org", "fsf.org"]);
+const INSTITUCIONAIS = new Set(["gov.br", "github.com", "ransomware.live", "naturalearthdata.com", "worldbank.org", "ransomlook.io", "githubusercontent.com"]);
 
 // Domínio de vítima em qualquer arquivo versionado barra a publicação.
 export function dominioNoTexto(texto, dominios) {

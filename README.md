@@ -1,15 +1,26 @@
 # Panthera Census
 
-O censo aberto do ransomware: o mundo inteiro, com o Brasil revisado à mão e nenhuma vítima identificada. Mapa-múndi, setores, grupos e comparação entre o Brasil e o mundo, para consulta e para uso em aula.
+O censo aberto do ransomware: o mundo inteiro, com o Brasil revisado à mão e nenhuma vítima identificada, para consulta e para uso em aula.
+
+## O que tem
+
+- **Mapa-múndi** por período, desde 2013, com filtro por setor e medida por alegações, por habitante e por PIB.
+- **Brasil e mundo** por setor, com a revisão dos casos brasileiros e margem de incerteza.
+- **Tempo:** mês a mês, dia da semana e demora até a alegação aparecer.
+- **O que eles alegam:** faixas de volume de dados, faturamento, funcionários, tipos de dado citados e situação da negociação, lidas do texto dos próprios criminosos.
+- **Grupos:** perfil de mais de 300 grupos, com RaaS, linhagem, grupos novos por ano, sites no ar, setores, países, ferramentas e vulnerabilidades.
+- **Como atacam:** ferramentas e CVEs usados por mais grupos.
+- **ANPD:** comunicações oficiais por ano, tipo, segmento, estado e setor, sempre separadas das alegações.
 
 Tudo o que aparece aqui é **alegação de criminoso em site de vazamento, não incidente confirmado**. Quem paga o resgate tende a não aparecer, então a base mostra só uma parte dos ataques.
 
 ## Como funciona
 
 - Site estático, sem servidor, sem login e sem chave de acesso, publicado no GitHub Pages. A consulta roda no navegador.
-- Um GitHub Action roda todo dia, baixa a base pública do [Ransomware.live](https://www.ransomware.live) e calcula os números somados.
+- Um GitHub Action roda todo dia, baixa as bases públicas e calcula os números somados. Se uma fonte complementar cair, só aquela seção fica vazia naquele dia.
+- Endereços `.onion`, contatos e carteiras de grupos nunca entram, mesmo estando nas fontes.
 - **O dado bruto nunca entra no repositório nem no site.** Ele existe só na memória da execução do Action. Os logs são públicos e não imprimem registro nenhum.
-- `scripts/trava.mjs` barra a publicação se aparecer texto que não seja nome de grupo, país, setor ou data, se um recorte tiver menos de 3 casos, se um arquivo versionado citar o site de uma vítima ou se a fonte vier cortada. Nesse caso, o site fica com os números do dia anterior.
+- `scripts/trava.mjs` barra a publicação se aparecer texto que não seja nome de grupo, país, setor, ferramenta, data ou rótulo conhecido, se um recorte tiver menos de 3 casos, se um arquivo versionado citar o site de uma vítima ou se a fonte vier cortada. Nesse caso, o site fica com os números do dia anterior.
 - `historico/resumo.csv` guarda só os totais de cada dia.
 
 ## Anonimização
@@ -49,7 +60,10 @@ Sem o `CENSUS_SEGREDO`, o Brasil sai como veio da fonte.
 ## Dados e créditos
 
 - Alegações, país e setor: [Ransomware.live](https://www.ransomware.live), de Julien Mousqueton, com uso não comercial e atribuição. Os dados brutos não são republicados aqui, como pedem os [termos](https://www.ransomware.live/t&c).
-- Comunicações de incidente: [painéis públicos da ANPD](https://www.gov.br/anpd/pt-br/assuntos/incidente-de-seguranca), transcritos à mão em `curadoria/anpd.json`. Nunca são somados às alegações.
+- Grupos: `groups.json` do Ransomware.live. Totais do ecossistema: [RansomLook](https://www.ransomlook.io), sob CC BY 4.0.
+- Ferramentas e vulnerabilidades: [Ransomware Tool Matrix](https://github.com/BushidoUK/Ransomware-Tool-Matrix) e [Ransomware Vulnerability Matrix](https://github.com/BushidoUK/Ransomware-Vulnerability-Matrix), de BushidoUK, sob CC BY 4.0.
+- População e PIB: [Banco Mundial](https://data.worldbank.org), sob CC BY 4.0, em `curadoria/referencias.json`. Atualize com `node scripts/referencias.mjs`.
+- Comunicações de incidente: [painéis públicos da ANPD](https://www.gov.br/anpd/pt-br/assuntos/incidente-de-seguranca), lidos dos painéis e guardados em `curadoria/anpd.json`. Não se atualizam sozinhos e nunca são somados às alegações.
 - Contornos do mapa: [Natural Earth](https://www.naturalearthdata.com/), via [world-atlas](https://github.com/topojson/world-atlas).
 
 ## Licença

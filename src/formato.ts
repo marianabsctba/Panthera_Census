@@ -3,7 +3,9 @@ const decimal = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 
 export const inteiro = (n: number) => numero.format(n);
+export const umaCasa = (n: number) => decimal.format(n);
 export const porcento = (n: number) => `${decimal.format(n)}%`;
+export const parteDe = (n: number, total: number) => (total ? porcento((n * 100) / total) : "0%");
 export const nomeDoMes = (mes: string) => `${MESES[Number(mes.slice(5, 7)) - 1]}/${mes.slice(2, 4)}`;
 export const data = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 
@@ -18,8 +20,8 @@ export function marcasDoEixo(maximo: number, quantas = 4): number[] {
   return marcas;
 }
 
-// Log: de 3 casos ao maior país, para os Estados Unidos não apagarem o resto do mapa.
-export function intensidade(n: number, maximo: number, minimo = 3): number {
+// Log: do menor ao maior país, para os Estados Unidos não apagarem o resto do mapa.
+export function intensidade(valor: number, maximo: number, minimo = 3): number {
   if (maximo <= minimo) return 1;
-  return Math.min(1, Math.max(0, Math.log(n / minimo) / Math.log(maximo / minimo)));
+  return Math.min(1, Math.max(0, Math.log(valor / minimo) / Math.log(maximo / minimo)));
 }

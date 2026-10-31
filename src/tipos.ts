@@ -5,6 +5,8 @@ export interface Pais {
   num: string | null;
   nome: string;
   n: number;
+  porMilhao: number | null;
+  porPib: number | null;
   setores: Contagem[];
   grupos: Contagem[];
   trimestres: Contagem[];
@@ -19,23 +21,17 @@ export interface LinhaSetor {
   margem: [number, number];
 }
 
-export interface Mes {
-  mes: string;
-  mundo: number;
-  brasil: number;
+export interface BlocoDeFaixas {
+  n: number;
+  faixas: Contagem[];
 }
 
-export interface AnoAnpd {
-  ano: string;
-  incidentes: number;
-  ransomware: number | null;
-}
-
-export interface Census {
-  periodo: { inicio: string; fim: string };
-  total: number;
-  gruposNaBase: number;
-  doze: { alegacoes: number; comPais: number; paises: number; paisesVisiveis: number; grupos: number };
+export interface Periodo {
+  alegacoes: number;
+  comPais: number;
+  paisesCitados: number;
+  paisesVisiveis: number;
+  gruposAtivos: number;
   brasil: {
     fonte: number;
     final: number;
@@ -46,9 +42,83 @@ export interface Census {
     setoresCorrigidos: number;
     posicao: number;
   };
-  meses: Mes[];
   paises: Pais[];
+  mapaSetor: Record<string, Contagem[]>;
   setores: LinhaSetor[];
   grupos: { mundo: Contagem[]; brasil: Contagem[] };
-  anpd: { atualizado: string; total: number; ransomware: number; anos: AnoAnpd[] };
+  tempo: { atraso: Contagem[]; semana: Contagem[] };
+  textos: {
+    comTexto: number;
+    volume: BlocoDeFaixas;
+    faturamento: BlocoDeFaixas;
+    funcionarios: BlocoDeFaixas;
+    dados: Contagem[];
+    situacao: BlocoDeFaixas;
+    comPrazo: number;
+  };
+}
+
+export interface Mes {
+  mes: string;
+  mundo: number;
+  brasil: number;
+}
+
+export interface RecorteAnpd {
+  nome: string;
+  total: number;
+  ransomware: number;
+  comTransferencia: number;
+  semTransferencia: number;
+  sensiveis: number | null;
+}
+
+export interface Anpd {
+  atualizado: string;
+  total: number;
+  ransomware: number;
+  anos: { ano: string; incidentes: number; ransomware: number | null }[];
+  tipos: Contagem[];
+  segmentos: RecorteAnpd[];
+  setores: RecorteAnpd[];
+  estados: RecorteAnpd[];
+  sensiveis: Contagem[];
+  processos: Contagem[];
+  ultimoAno: { ano: string; comunicacao: Contagem[]; impacto: Contagem[]; criancas: Contagem[]; titulares: Contagem[] } | null;
+}
+
+export interface Resumo {
+  periodo: { inicio: string; fim: string };
+  total: number;
+  gruposNaBase: number;
+  anosDisponiveis: string[];
+  meses: Mes[];
+  gruposNovos: Contagem[];
+  tipos: { raas: number; comLinhagem: number; sinalizados: number; comSiteNoAr: number; total: number };
+  ecossistema: { grupos: number; gruposNoAr: number; sitesDeVazamento: number; mercados: number; mercadosNoAr: number; publicacoes90d: number } | null;
+  ferramentas: { nome: string; categoria: string; grupos: number }[];
+  vulnerabilidades: { cve: string; produto: string; grupos: number }[];
+  totaisMatrizes: { ferramentas: number; vulnerabilidades: number };
+  anpd: Anpd;
+}
+
+export interface Grupo {
+  nome: string;
+  raas: boolean;
+  linhagem: string | null;
+  outroNome: string | null;
+  primeira: string;
+  ultima: string;
+  total: number;
+  dozeMeses: number;
+  noBrasil: number;
+  sites: number;
+  sitesNoAr: number;
+  sinalizado: boolean;
+  apreendido: boolean;
+  setores: Contagem[];
+  paises: Contagem[];
+  anos: Contagem[];
+  ferramentas: [string, string][];
+  vulnerabilidades: [string, string][];
 }
