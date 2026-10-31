@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { agregar, chaveOpaca, inicioDoPeriodo, semPequenos, wilson } from "./agregar.mjs";
 import {
-  enderecosDoGrupo, faixaAtraso, faixaFaturamento, faixaFuncionarios, faixaVolume, faturamentoEmDolar, funcionarios,
-  grupoSinalizado, lerFerramentas, lerVulnerabilidades, nomeDeGrupo, volumeEmGb,
+  faixaAtraso, faixaFaturamento, faixaFuncionarios, faixaVolume, faturamentoEmDolar, funcionarios,
+  grupoSinalizado, lerFerramentas, lerLocais, lerVulnerabilidades, nomeDeGrupo, volumeEmGb,
 } from "./texto.mjs";
 import { dominioNoTexto, validarCorrecoes, validarFonte, validarSaida } from "./trava.mjs";
 
@@ -106,23 +106,40 @@ describe("agregar", () => {
     expect(g.nomeRansomLook).toBeNull();
   });
 
-  it("só publica site de anúncio no ar, nunca arquivos, chat ou painel", () => {
+  it("lê todos os endereços, no ar ou não, e só conta os servidores de arquivos", () => {
     const onion = (c) => `${c.repeat(56)}.onion`;
-    const locais = [
-      { fqdn: onion("a"), available: true },
-      { fqdn: onion("b"), available: false },
+    const { enderecos, arquivos } = lerLocais([
+      { fqdn: onion("a"), available: false, updated: "2024-01-02 10:00:00" },
+      { fqdn: onion("b"), available: true, updated: "2026-10-01 10:00:00" },
       { fqdn: onion("c"), available: true, fs: true },
-      { fqdn: onion("d"), available: true, chat: true },
-      { fqdn: onion("e"), available: true, admin: true },
-      { fqdn: "31.41.244.10", available: true },
-    ];
-    expect(enderecosDoGrupo(locais)).toEqual([onion("a")]);
+      { fqdn: onion("d"), available: false, chat: true, updated: "Never" },
+      { fqdn: onion("e"), available: true, admin: true, updated: "" },
+      { fqdn: "31.41.244.10", available: false, updated: "2025-04-18 10:00:00" },
+      { fqdn: "http://f.onion/vitima-ficticia", available: true },
+    ]);
+    expect(enderecos.map((x) => [x.e, x.t, x.ar])).toEqual([
+      [onion("b"), "Site de anúncio", true],
+      [onion("e"), "Painel", true],
+      ["31.41.244.10", "Site de anúncio", false],
+      [onion("a"), "Site de anúncio", false],
+      [onion("d"), "Chat", false],
+    ]);
+    expect(enderecos.find((x) => x.e === onion("a")).visto).toBe("2024-01-02");
+    expect(enderecos.find((x) => x.e === onion("d")).visto).toBeNull();
+    expect(arquivos).toEqual([onion("c")]);
+  });
+
+  it("publica a lista de todos os grupos e tira o que coincide com site de vítima", () => {
+    const item = (e) => ({ e, t: "Site de anúncio", ar: false, visto: null });
+    const registros = base().map((r, i) => (i === 0 ? { ...r, website: "https://www.vitima-ficticia.example/" } : r));
     const saida = agregar({
-      registros: base(), correcoes: {}, chave: null, pais, anpd, gruposRansomLook: ["Grupo A"],
-      enderecos: { verificado: "2026-10-31", grupos: { "Grupo A": [onion("a")] } },
+      registros, correcoes: {}, chave: null, pais, anpd,
+      enderecos: { verificado: "2026-10-31", grupos: {
+        "grupo sem perfil": { arquivos: 2, enderecos: [item("aaa.onion"), item("vitima-ficticia.example")] },
+        "grupo vazio": { arquivos: 0, enderecos: [] },
+      } },
     });
-    expect(saida.grupos.find((x) => x.nome === "grupo-a").enderecos).toEqual([onion("a")]);
-    expect(saida.grupos.find((x) => x.nome === "grupo-b")).toBeUndefined();
+    expect(saida.listaDeEnderecos).toEqual([{ nome: "grupo sem perfil", arquivos: 2, enderecos: [item("aaa.onion")] }]);
     expect(saida.resumo.enderecosVerificados).toBe("2026-10-31");
   });
 
@@ -232,16 +249,19 @@ describe("trava", () => {
     expect(comLink("https://site-qualquer.example/x").length).toBeGreaterThan(0);
   });
 
-  it("só aceita endereço puro de site de grupo no campo próprio", () => {
+  it("só aceita endereço puro de grupo no campo próprio", () => {
     const onion = `${"a".repeat(56)}.onion`;
-    const comEndereco = (valor) => {
+    const comEndereco = (item) => {
       const saida = limpa();
-      saida.grupos[0].enderecos = [valor];
+      saida.listaDeEnderecos = [{ nome: "grupo-a", arquivos: 0, enderecos: [item] }];
       return validarSaida(saida, permitidos);
     };
-    expect(comEndereco(onion)).toEqual([]);
-    expect(comEndereco(`http://${onion}/vitima-ficticia`).length).toBeGreaterThan(0);
-    expect(comEndereco("site-qualquer.example").length).toBeGreaterThan(0);
+    const bom = { e: onion, t: "Chat", ar: false, visto: "2024-01-02" };
+    expect(comEndereco(bom)).toEqual([]);
+    expect(comEndereco({ ...bom, e: `http://${onion}/vitima-ficticia` }).length).toBeGreaterThan(0);
+    expect(comEndereco({ ...bom, e: `${onion}/vitima-ficticia` }).length).toBeGreaterThan(0);
+    expect(comEndereco({ ...bom, t: "Servidor de arquivos" }).length).toBeGreaterThan(0);
+    expect(comEndereco({ ...bom, titulo: "Empresa Ficticia" }).length).toBeGreaterThan(0);
     const fora = limpa();
     fora.grupos[0].outroNome = onion;
     expect(validarSaida(fora, permitidos).length).toBeGreaterThan(0);

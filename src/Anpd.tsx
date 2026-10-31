@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Barras, Colunas } from "./Graficos";
 import { data, inteiro, parteDe } from "./formato";
+import Secao from "./Secao";
 import type { Anpd, RecorteAnpd } from "./tipos";
 
 const VISOES = { segmentos: "Segmento", estados: "Estado", setores: "Setor" } as const;
@@ -11,7 +12,7 @@ function Tabela({ linhas, rotulo }: { linhas: RecorteAnpd[]; rotulo: string }) {
     <div className="tabela">
       <table>
         <thead>
-          <tr><th scope="col">{rotulo}</th><th scope="col">Comunicações</th><th scope="col">Ransomware</th><th scope="col">Parte</th><th scope="col">Com dados levados</th><th scope="col">Sem dados levados</th></tr>
+          <tr><th scope="col">{rotulo}</th><th scope="col">Total</th><th scope="col">Ransomware</th><th scope="col">Parte</th><th scope="col">Com dados levados</th><th scope="col">Sem dados levados</th></tr>
         </thead>
         <tbody>
           {linhas.map((l) => (
@@ -29,8 +30,7 @@ export default function PainelAnpd({ a }: { a: Anpd }) {
   const [visao, setVisao] = useState<Visao>("segmentos");
   const linhas = [...a[visao]].sort((x, y) => y.ransomware - x.ransomware || y.total - x.total);
   return (
-    <section id="anpd" className="secao">
-      <h2 className="titulo-secao">O que chega à ANPD</h2>
+    <Secao id="anpd" titulo="O que chega à ANPD">
       <p className="dica">
         Dado oficial, transcrito em {data(a.atualizado)} dos <a href="https://www.gov.br/anpd/pt-br/assuntos/incidente-de-seguranca" target="_blank" rel="noreferrer">painéis da ANPD</a>. Nunca é somado às alegações: mede outra coisa, e só cobre incidentes com dados pessoais e risco relevante. A conta inclui comunicações preliminares, complementares e completas, e ainda falta confirmar se uma mesma ocorrência conta mais de uma vez.
       </p>
@@ -87,6 +87,6 @@ export default function PainelAnpd({ a }: { a: Anpd }) {
           </div>
         )}
       </div>
-    </section>
+    </Secao>
   );
 }

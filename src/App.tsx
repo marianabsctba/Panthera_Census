@@ -5,6 +5,7 @@ import { Barras, Colunas, Setores } from "./Graficos";
 import Grupos from "./Grupos";
 import { data, inteiro, nomeDoMes, parteDe, umaCasa } from "./formato";
 import Mapa, { type PontoDoMapa } from "./Mapa";
+import Secao, { irPara } from "./Secao";
 import type { Grupo, Pais, Periodo, Resumo } from "./tipos";
 
 const preferencia = (chave: string) => {
@@ -91,6 +92,11 @@ function SecaoMapa({ p, aberto }: { p: Periodo; aberto: string }) {
           <p className="nota">Escala logarítmica. Países pequenos demais para o contorno aparecem como ponto. Nas contas por habitante e por PIB, países com menos de 1 milhão de habitantes ficam de fora. População e PIB: <a href="https://data.worldbank.org" target="_blank" rel="noreferrer">Banco Mundial</a>.</p>
         </div>
         <div className="cartao detalhe">
+          <label className="escolher-pais">Escolher país
+            <select className="campo" value={pais.cc} onChange={(e) => setSelecionado(e.target.value)}>
+              {[...p.paises].sort((a, b) => a.nome.localeCompare(b.nome)).map((x) => <option key={x.cc} value={x.cc}>{x.nome}</option>)}
+            </select>
+          </label>
           <div className="pais">{pais.nome}</div>
           <p className="nota">
             {inteiro(pais.n)} alegações
@@ -132,8 +138,7 @@ function SecaoMapa({ p, aberto }: { p: Periodo; aberto: string }) {
 function SecaoBrasil({ p, doPeriodo }: { p: Periodo; doPeriodo: string }) {
   const b = p.brasil;
   return (
-    <section id="brasil" className="secao">
-      <h2 className="titulo-secao">O Brasil se parece com o mundo?</h2>
+    <Secao id="brasil" titulo="O Brasil se parece com o mundo?">
       <div className="cartao">
         <p className="nota">Parte de cada setor nas alegações {doPeriodo}. A linha mostra a incerteza do número revisado, com intervalo de 95%. Só o Brasil passou pela revisão, então diferenças pequenas ainda não dizem muita coisa.</p>
         <div className="chave">
@@ -163,14 +168,13 @@ function SecaoBrasil({ p, doPeriodo }: { p: Periodo; doPeriodo: string }) {
           </div>
         </div>
       </div>
-    </section>
+    </Secao>
   );
 }
 
 function SecaoTempo({ p, r }: { p: Periodo; r: Resumo }) {
   return (
-    <section id="tempo" className="secao">
-      <h2 className="titulo-secao">No tempo</h2>
+    <Secao id="tempo" titulo="No tempo">
       <div className="duas">
         <div className="cartao">
           <h3>Mundo, mês a mês</h3>
@@ -195,7 +199,7 @@ function SecaoTempo({ p, r }: { p: Periodo; r: Resumo }) {
           <Barras linhas={p.tempo.semana} />
         </div>
       </div>
-    </section>
+    </Secao>
   );
 }
 
@@ -203,8 +207,7 @@ function SecaoAlegam({ p }: { p: Periodo }) {
   const t = p.textos;
   const fatia = (n: number) => `${inteiro(n)} casos, ${parteDe(n, p.alegacoes)} das alegações do período`;
   return (
-    <section id="alegam" className="secao">
-      <h2 className="titulo-secao">O que eles alegam</h2>
+    <Secao id="alegam" titulo="O que eles alegam">
       <p className="aviso">Isto é o que o próprio criminoso escreve, e criminoso conta vantagem. Cada gráfico vale só para os poucos casos em que a informação aparece e não representa todas as vítimas. Textos gerados por IA pela fonte ficam de fora.</p>
       <div className="duas">
         <div className="cartao"><h3>Volume de dados alegado</h3><p className="nota">{fatia(t.volume.n)}.</p><Barras linhas={t.volume.faixas} /></div>
@@ -217,14 +220,13 @@ function SecaoAlegam({ p }: { p: Periodo }) {
         <p className="nota">Busca por palavras em {inteiro(t.comTexto)} textos. Uma alegação pode citar vários tipos, e a busca é aproximada.</p>
         <Barras linhas={t.dados} />
       </div>
-    </section>
+    </Secao>
   );
 }
 
 function SecaoAtaque({ r }: { r: Resumo }) {
   return (
-    <section id="ataque" className="secao">
-      <h2 className="titulo-secao">Como atacam</h2>
+    <Secao id="ataque" titulo="Como atacam">
       <p className="dica">
         O que relatórios públicos já viram em ataques: {inteiro(r.totaisMatrizes.ferramentas)} ferramentas e {inteiro(r.totaisMatrizes.vulnerabilidades)} vulnerabilidades. Fonte: <a href="https://github.com/BushidoUK/Ransomware-Tool-Matrix" target="_blank" rel="noreferrer">Ransomware Tool Matrix</a> e <a href="https://github.com/BushidoUK/Ransomware-Vulnerability-Matrix" target="_blank" rel="noreferrer">Ransomware Vulnerability Matrix</a>, de BushidoUK (CC BY 4.0).
       </p>
@@ -240,7 +242,7 @@ function SecaoAtaque({ r }: { r: Resumo }) {
           <Barras linhas={r.vulnerabilidades.map((v) => [`${v.cve} (${v.produto})`, v.grupos])} />
         </div>
       </div>
-    </section>
+    </Secao>
   );
 }
 
@@ -276,7 +278,11 @@ function Conteudo({ r, grupos }: { r: Resumo; grupos: Grupo[] }) {
             <option value="tudo">Desde o começo (2013)</option>
           </select>
         </label>
-        <div className="atalhos">{NAV.map(([id, nome]) => <a key={id} href={`#${id}`}>{nome}</a>)}</div>
+        <div className="atalhos">
+          {NAV.map(([id, nome]) => (
+            <a key={id} href={`#${id}`} onClick={(ev) => { ev.preventDefault(); irPara(id); }}>{nome}</a>
+          ))}
+        </div>
       </nav>
 
       {!p ? (
@@ -305,16 +311,15 @@ function Conteudo({ r, grupos }: { r: Resumo; grupos: Grupo[] }) {
       <SecaoAtaque r={r} />
       <PainelAnpd a={r.anpd} />
 
-      <section id="ler" className="cartao secao">
-        <h2>Como ler</h2>
+      <Secao id="ler" titulo="Como ler">
         <ul className="lista">
           <li>Quem paga o resgate tende a não aparecer em site de vazamento, então a base mostra só uma parte dos ataques.</li>
           <li>País e setor vêm da fonte e têm erros. Na leitura dos casos do Brasil, cerca de 8% eram de outro país e 18% estavam no setor errado. Quando a informação falta, fica como não informado.</li>
           <li>O site mostra apenas números somados. Nomes, sites e links de vítimas ficam fora dele e do repositório.</li>
-          <li>Grupos são citados pelo nome porque são os autores das alegações. O perfil traz o endereço do site de anúncio no ar, para pesquisa. Servidores de arquivos, contatos e carteiras ficam de fora.</li>
+          <li>Grupos são citados pelo nome porque são os autores das alegações. Para pesquisa, o site lista os endereços de anúncio, chat e painel dos grupos, no ar ou não. Servidores de arquivos, contatos e carteiras ficam de fora.</li>
           <li>Países com mais empresas aparecem mais. Por isso, o mapa também mede por habitante e por PIB.</li>
         </ul>
-      </section>
+      </Secao>
     </>
   );
 }

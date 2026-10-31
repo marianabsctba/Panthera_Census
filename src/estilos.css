@@ -105,11 +105,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .mapa circle { stroke: var(--painel); stroke-width: 0.8; cursor: pointer; }
 .mapa .selecionado { stroke: var(--texto); stroke-width: 1.5; }
 .legenda { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--texto-2); }
-.rampa { display: block; height: 10px; width: min(100%, 14rem); border-radius: 2px; background: linear-gradient(90deg, var(--mapa-baixo), var(--rosa)); }
+.rampa { display: block; height: 10px; width: min(100%, 14rem); border-radius: 2px; background: linear-gradient(90deg, rgb(255 31 168 / 0.28), var(--rosa)); }
 .amostra { width: 12px; height: 12px; border-radius: 2px; background: var(--mapa-vazio); margin-left: 8px; }
 
 .dica-flutuante {
-  position: absolute; z-index: 5; pointer-events: none; white-space: nowrap;
+  position: absolute; z-index: 5; pointer-events: none; max-width: min(18rem, 92%);
   background: var(--flutuante); border: 1px solid var(--borda-forte); border-radius: 8px;
   padding: 5px 9px; font-size: 0.8rem; box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
 }
@@ -151,8 +151,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .lista { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 4px; max-width: 80ch; }
 
 /* Navegação, filtros e seções */
-.secao { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 76px; }
-.titulo-secao { font-size: 1.5rem; font-weight: 700; margin-top: 12px; }
+.secao { scroll-margin-top: 76px; }
+.secao-corpo { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.titulo-secao { font-size: 1.5rem; font-weight: 700; margin-top: 12px; list-style: none; }
+.titulo-secao::-webkit-details-marker { display: none; }
+.escolher-pais { display: none; }
 .navegacao {
   position: sticky; top: 0; z-index: 8; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
   padding: 8px 0; background: var(--fundo); border-bottom: 1px solid var(--borda);
@@ -205,6 +208,62 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border: 1px solid var(--rosa); border-radius: 8px; text-decoration: none; overflow-wrap: anywhere;
 }
 .link-pesquisa:hover { background: var(--fundo); }
+
+/* Celular */
+@media (max-width: 760px) {
+  body { font-size: 1rem; }
+  h1 { font-size: 1.55rem; }
+  .grande { font-size: 1.02rem; }
+  .conteudo { padding: 18px 14px 32px; gap: 12px; }
+  .cartao { padding: 14px; }
+  .navegacao { position: static; }
+  .secao { scroll-margin-top: 8px; }
+
+  .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .numeros.compactos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .numero strong { font-size: 1.45rem; }
+
+  /* Toque grande para abrir cada seção */
+  .titulo-secao {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; margin: 0;
+    padding: 10px 14px; font-size: 1.08rem; cursor: pointer;
+    background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio);
+  }
+  .titulo-secao::after { content: "+"; color: var(--rosa-claro); font-size: 1.4rem; line-height: 1; }
+  details[open] > .titulo-secao::after { content: "\2212"; }
+  .secao-corpo { margin-top: 10px; gap: 10px; }
+
+  .escolher-pais { display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; color: var(--texto-2); }
+  .escolher-pais .campo { width: 100%; }
+  .filtros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filtros .campo { width: 100%; }
+  .campo { font-size: 16px; min-height: 44px; }
+  .aba { min-height: 44px; }
+  .rampa { width: 7rem; }
+  .amostra { margin-left: 0; }
+
+  /* Rótulo em cima, barra embaixo: sem texto espremido */
+  .barras { gap: 8px; }
+  .barra { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "rotulo numero" "trilha trilha"; gap: 2px 8px; }
+  .barra-rotulo { grid-area: rotulo; }
+  .barra-numero { grid-area: numero; }
+  .barra-trilha { grid-area: trilha; height: 8px; }
+
+  /* Na ANPD ficam as colunas que importam */
+  #anpd th:nth-child(n+5), #anpd td:nth-child(n+5) { display: none; }
+  .tabela { max-height: 20rem; }
+  .linha-pais { min-height: 44px; }
+  .grupos-rolagem { max-height: 12rem; }
+  .grupo-botao { min-height: 44px; align-items: center; }
+  .endereco { padding: 6px 0; }
+  .endereco code { width: 100%; }
+  .lista-enderecos { max-height: 28rem; }
+  .rodape { justify-content: flex-start; }
+}
 .enderecos { display: flex; flex-direction: column; gap: 6px; }
-.endereco { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.endereco { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 3px 0; border-top: 1px solid var(--borda); }
+.estado-ar { font-size: 0.74rem; padding: 0 7px; border: 1px solid var(--borda-forte); border-radius: 999px; color: var(--texto-2); }
+.estado-ar.no-ar { border-color: var(--rosa); color: var(--rosa-claro); }
+.rolagem-enderecos { max-height: 18rem; overflow: auto; }
+.lista-enderecos { display: flex; flex-direction: column; gap: 12px; max-height: 40rem; overflow: auto; }
 .endereco code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.8rem; overflow-wrap: anywhere; min-width: 0; user-select: all; }

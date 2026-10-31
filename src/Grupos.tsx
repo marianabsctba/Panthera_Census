@@ -1,26 +1,68 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Barras, Colunas } from "./Graficos";
 import { data, inteiro, nomeDoMes } from "./formato";
-import type { Grupo, Resumo } from "./tipos";
+import Secao from "./Secao";
+import type { Endereco, EnderecosDoGrupo, Grupo, Resumo } from "./tipos";
 
-function Endereco({ valor }: { valor: string }) {
+const AVISO_ENDERECOS = "Sites de grupos são operados por criminosos e podem ter dados roubados, inclusive de saúde e de crianças. Só para pesquisa legítima: acesse em ambiente isolado, não baixe nada e não contate o grupo. Abrir ou guardar dados roubados pode ter consequências legais. Os endereços ficam sem link de propósito, para ninguém cair lá por um clique.";
+
+function LinhaEndereco({ item }: { item: Endereco }) {
   const [copiado, setCopiado] = useState(false);
   const copiar = () => {
-    navigator.clipboard?.writeText(valor).then(() => {
+    navigator.clipboard?.writeText(item.e).then(() => {
       setCopiado(true);
       setTimeout(() => setCopiado(false), 1500);
     }).catch(() => undefined);
   };
   return (
     <div className="endereco">
-      <code>{valor}</code>
+      <code>{item.e}</code>
+      <span className={item.ar ? "estado-ar no-ar" : "estado-ar"}>{item.ar ? "No ar" : "Fora do ar"}</span>
+      <span className="nota">{item.t}{item.visto ? `, visto em ${data(item.visto)}` : ""}</span>
       <button className="aba" onClick={copiar}>{copiado ? "Copiado" : "Copiar"}</button>
     </div>
   );
 }
 
-function Perfil({ g, verificado }: { g: Grupo; verificado: string | null }) {
+function ListaEnderecos({ grupo }: { grupo: EnderecosDoGrupo }) {
+  return (
+    <div className="enderecos">
+      {grupo.enderecos.map((item) => <LinhaEndereco key={item.e} item={item} />)}
+      {grupo.arquivos > 0 && <p className="nota">Mais {inteiro(grupo.arquivos)} servidores de arquivos, listados só na ficha do RansomLook.</p>}
+    </div>
+  );
+}
+
+function Enderecos({ lista, verificado }: { lista: EnderecosDoGrupo[]; verificado: string | null }) {
+  const [busca, setBusca] = useState("");
+  const [quantos, setQuantos] = useState(30);
+  const termo = busca.trim().toLowerCase();
+  const achados = lista.filter((g) => !termo || g.nome.toLowerCase().includes(termo) || g.enderecos.some((x) => x.e.includes(termo)));
+  const total = lista.reduce((s, g) => s + g.enderecos.length, 0);
+  const noAr = lista.reduce((s, g) => s + g.enderecos.filter((x) => x.ar).length, 0);
+  return (
+    <div className="cartao" id="enderecos">
+      <h3>Endereços de todos os grupos</h3>
+      <p className="nota">{inteiro(total)} endereços de {inteiro(lista.length)} grupos, {inteiro(noAr)} no ar, incluindo grupos antigos e sem perfil aqui. Fonte: <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0){verificado ? `, atualizado em ${data(verificado)}` : ""}.</p>
+      <p className="aviso">{AVISO_ENDERECOS}</p>
+      <label className="sr" htmlFor="busca-endereco">Buscar grupo ou endereço</label>
+      <input id="busca-endereco" className="campo" type="search" placeholder="Buscar grupo ou endereço" value={busca} onChange={(ev) => { setBusca(ev.target.value); setQuantos(30); }} />
+      <div className="lista-enderecos">
+        {achados.slice(0, quantos).map((g) => (
+          <div key={g.nome}>
+            <h3>{g.nome}</h3>
+            <ListaEnderecos grupo={g} />
+          </div>
+        ))}
+        {achados.length === 0 && <p className="nota">Nada encontrado.</p>}
+      </div>
+      {achados.length > quantos && <button className="aba" onClick={() => setQuantos(quantos + 60)}>Mostrar mais grupos ({inteiro(achados.length - quantos)} restantes)</button>}
+    </div>
+  );
+}
+
+function Perfil({ g, enderecos, verificado }: { g: Grupo; enderecos?: EnderecosDoGrupo; verificado: string | null }) {
   const porCategoria = useMemo(() => {
     const mapa = new Map<string, string[]>();
     for (const [categoria, nome] of g.ferramentas) mapa.set(categoria, [...(mapa.get(categoria) ?? []), nome]);
@@ -50,16 +92,14 @@ function Perfil({ g, verificado }: { g: Grupo; verificado: string | null }) {
           {g.nomeRansomLook && <a className="link-pesquisa" href={`https://www.ransomlook.io/group/${encodeURIComponent(g.nomeRansomLook)}`} target="_blank" rel="noopener noreferrer">Ficha no RansomLook <ArrowUpRight size={14} /></a>}
           {g.referencias.map((url) => <a key={url} className="link-pesquisa" href={url} target="_blank" rel="noopener noreferrer">Relatório: {new URL(url).hostname.replace(/^www\./, "")} <ArrowUpRight size={14} /></a>)}
         </div>
-        {g.enderecos.length > 0 && (
+        {enderecos && enderecos.enderecos.length > 0 && (
           <>
-            <h3>Site de vazamento no ar</h3>
-            <div className="enderecos">
-              {g.enderecos.map((e) => <Endereco key={e} valor={e} />)}
-            </div>
-            {verificado && <p className="nota">Verificado pelo <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0) e atualizado aqui em {data(verificado)}. Esses endereços mudam com frequência.</p>}
+            <h3>Endereços do grupo ({inteiro(enderecos.enderecos.length)})</h3>
+            <div className="rolagem-enderecos"><ListaEnderecos grupo={enderecos} /></div>
+            {verificado && <p className="nota">Fonte: <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0), atualizado em {data(verificado)}. Esses endereços mudam com frequência.</p>}
           </>
         )}
-        <p className="aviso">Sites de grupos são operados por criminosos e podem ter dados roubados, inclusive de saúde e de crianças. Só para pesquisa legítima: acesse em ambiente isolado, não baixe nada e não contate o grupo. Abrir ou guardar dados roubados pode ter consequências legais. Os endereços ficam sem link de propósito, para ninguém cair lá por um clique.</p>
+        <p className="aviso">{AVISO_ENDERECOS}</p>
         <p className="nota">As fichas são de terceiros e listam os endereços do grupo e as vítimas alegadas.</p>
       </div>
       <div className="duas">
@@ -104,14 +144,18 @@ function Perfil({ g, verificado }: { g: Grupo; verificado: string | null }) {
 export default function Grupos({ grupos, resumo }: { grupos: Grupo[]; resumo: Resumo }) {
   const [busca, setBusca] = useState("");
   const [nome, setNome] = useState(grupos[0]?.nome ?? "");
+  const [enderecos, setEnderecos] = useState<EnderecosDoGrupo[]>([]);
+  useEffect(() => {
+    fetch("./dados/enderecos.json").then((r) => (r.ok ? r.json() : [])).then(setEnderecos).catch(() => undefined);
+  }, []);
+  const porNome = useMemo(() => new Map(enderecos.map((g) => [g.nome, g])), [enderecos]);
   const termo = busca.trim().toLowerCase();
   const lista = grupos.filter((g) => !termo || g.nome.toLowerCase().includes(termo) || (g.outroNome ?? "").toLowerCase().includes(termo));
   const atual = grupos.find((g) => g.nome === nome) ?? grupos[0];
   const t = resumo.tipos;
   const e = resumo.ecossistema;
   return (
-    <section id="grupos" className="secao">
-      <h2 className="titulo-secao">Os grupos</h2>
+    <Secao id="grupos" titulo="Os grupos">
       <div className="numeros">
         <div className="cartao numero"><strong>{inteiro(t.total)}</strong><span>grupos acompanhados</span></div>
         <div className="cartao numero"><strong>{inteiro(t.comSiteNoAr)}</strong><span>com site no ar agora</span></div>
@@ -154,9 +198,10 @@ export default function Grupos({ grupos, resumo }: { grupos: Grupo[]; resumo: Re
               {lista.length === 0 && <p className="nota">Nenhum grupo com esse nome.</p>}
             </div>
           </div>
-          {atual && <Perfil g={atual} verificado={resumo.enderecosVerificados} />}
+          {atual && <Perfil g={atual} enderecos={atual.nomeRansomLook ? porNome.get(atual.nomeRansomLook) : undefined} verificado={resumo.enderecosVerificados} />}
         </div>
       </div>
-    </section>
+      {enderecos.length > 0 && <Enderecos lista={enderecos} verificado={resumo.enderecosVerificados} />}
+    </Secao>
   );
 }

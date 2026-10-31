@@ -12,7 +12,7 @@ permissions:
 jobs:
   atualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,7 +22,13 @@ jobs:
       - run: npm ci
       - run: npm test
       # Só os endereços vão para o arquivo. O log não imprime nenhum.
-      - run: node scripts/enderecos.mjs
+      # Toda semana revê os ativos. Na primeira segunda do mês, ou à mão, revê todos os grupos.
+      - run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$(date +%-d)" -le 7 ]; then
+            node scripts/enderecos.mjs --todos
+          else
+            node scripts/enderecos.mjs
+          fi
       - name: Guardar a lista da semana
         run: |
           git config user.name marianabsctba

@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { inteiro, marcasDoEixo, porcento } from "./formato";
 import type { Contagem, LinhaSetor } from "./tipos";
 
 function useLargura<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [largura, setLargura] = useState(640);
-  useEffect(() => {
+  // Mede antes de pintar, para o gráfico não aparecer minúsculo no primeiro instante.
+  useLayoutEffect(() => {
     if (!ref.current) return;
+    if (ref.current.clientWidth > 0) setLargura(Math.max(260, ref.current.clientWidth));
     const observador = new ResizeObserver(([e]) => setLargura(Math.max(260, e.contentRect.width)));
     observador.observe(ref.current);
     return () => observador.disconnect();

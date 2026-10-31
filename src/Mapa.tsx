@@ -44,16 +44,19 @@ export default function Mapa({ pontos, selecionado, aoSelecionar }: { pontos: Po
   const minimo = Math.min(...valores, maximo);
   const porNumero = useMemo(() => new Map(pontos.filter((p) => p.num).map((p) => [p.num as string, p])), [pontos]);
 
-  const cor = (valor: number) => `color-mix(in srgb, var(--rosa) ${Math.round(intensidade(valor, maximo, minimo) * 100)}%, var(--mapa-baixo))`;
+  // Opacidade funciona em qualquer celular, mesmo nos que não têm as misturas de cor mais novas.
+  const opacidade = (valor: number) => 0.28 + 0.72 * intensidade(valor, maximo, minimo);
   const eventos = (ponto: PontoDoMapa) => ({
     onPointerMove: (ev: React.PointerEvent) => {
+      // No toque a dica ficaria presa na tela: o detalhe do país já abre com o clique.
+      if (ev.pointerType === "touch") return;
       const caixa = (ev.currentTarget as SVGElement).closest(".mapa")!.getBoundingClientRect();
       setDica({ ponto, x: ev.clientX - caixa.left, y: ev.clientY - caixa.top });
     },
     onPointerLeave: () => setDica(null),
     onClick: () => aoSelecionar(ponto.cc),
     className: ponto.cc === selecionado ? "selecionado" : undefined,
-    style: { fill: cor(ponto.valor) },
+    style: { fill: "var(--rosa)", fillOpacity: opacidade(ponto.valor) },
   });
 
   return (

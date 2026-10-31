@@ -233,7 +233,7 @@ function agregarPeriodo({ registros, revisao, pais, referencias }) {
 const ehRaas = (g) => g.type?.raas === true;
 
 // Perfil de cada grupo com K alegações ou mais. Endereços, contatos e carteiras não entram.
-function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, enderecos, pais, matrizes, inicio12m }) {
+function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pais, matrizes, inicio12m }) {
   const porNome = new Map();
   for (const g of gruposFonte) porNome.set(g.name, g);
   const noRansomLook = new Map(gruposRansomLook.map((n) => [nomeExato(n), n]));
@@ -273,7 +273,6 @@ function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, end
         vulnerabilidades: matrizes.vulnerabilidades.filter((v) => v.grupos.some((n) => chaves.has(nomeDeGrupo(n)))).map((v) => [v.cve, v.produto]),
         nomeRansomLook: noRansomLook.get(nomeExato(nome)) ?? noRansomLook.get(nomeExato(g.altname ?? "")) ?? null,
         referencias: referenciasDoGrupo(g.profile),
-        enderecos: enderecos.grupos[noRansomLook.get(nomeExato(nome)) ?? noRansomLook.get(nomeExato(g.altname ?? ""))] ?? [],
       };
     })
     .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
@@ -317,7 +316,12 @@ export function agregar({ registros, correcoes, chave, pais, anpd, referencias =
   for (const x of [...registros].sort((a, b) => a.discovered.localeCompare(b.discovered))) {
     if (!primeira.has(x.group_name)) primeira.set(x.group_name, x.discovered.slice(0, 4));
   }
-  const grupos = perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, enderecos, pais, matrizes, inicio12m });
+  const grupos = perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pais, matrizes, inicio12m });
+  // Todos os grupos da lista, com ou sem perfil aqui. Endereço igual ao site de uma vítima não entra.
+  const sitesDeVitimas = new Set(registros.map((x) => String(x.website ?? "").toLowerCase().trim().replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0]).filter(Boolean));
+  const listaDeEnderecos = Object.entries(enderecos.grupos)
+    .map(([nome, g]) => ({ nome, arquivos: g.arquivos, enderecos: g.enderecos.filter((x) => !sitesDeVitimas.has(x.e)) }))
+    .filter((g) => g.enderecos.length > 0 || g.arquivos > 0);
 
   const usoDeFerramentas = matrizes.ferramentas
     .map((f) => ({ nome: f.nome, categoria: f.categoria, grupos: new Set(f.grupos.map(nomeDeGrupo)).size }))
@@ -352,5 +356,6 @@ export function agregar({ registros, correcoes, chave, pais, anpd, referencias =
     },
     periodos,
     grupos,
+    listaDeEnderecos,
   };
 }

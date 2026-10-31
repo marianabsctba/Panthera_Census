@@ -143,6 +143,7 @@ const saida = agregar({
 const grupos = new Set(registros.map((x) => x.group_name));
 for (const g of gruposFonte) for (const t of [g.name, g.altname, g.lineage]) if (t) grupos.add(t);
 for (const nome of gruposRansomLook) grupos.add(nome);
+for (const nome of Object.keys(ler("curadoria/enderecos.json").grupos)) grupos.add(nome);
 const erros = validarSaida(saida, {
   grupos,
   paises: new Set(registros.map((x) => x.country).filter(Boolean).map(nomePais).filter(Boolean)),
@@ -154,12 +155,13 @@ const erros = validarSaida(saida, {
 // Nenhum arquivo versionado pode citar o site de uma vítima.
 const dominios = new Set();
 for (const x of registros) {
-  const site = String(x.website ?? "").toLowerCase().trim().replace(/^https?:\/\/|^www\./g, "").split("/")[0];
+  const site = String(x.website ?? "").toLowerCase().trim().replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
   if (site.includes(".")) dominios.add(site);
 }
 const versionados = execFileSync("git", ["ls-files"], { cwd: RAIZ, encoding: "utf8" }).split("\n").filter(Boolean);
 for (const arquivo of versionados) {
-  if (arquivo === "package-lock.json" || /\.(png|webp)$/.test(arquivo) || !existsSync(join(RAIZ, arquivo))) continue;
+  // A lista de endereços é conferida à parte: o que coincidir com site de vítima já sai filtrado.
+  if (arquivo === "package-lock.json" || arquivo === "curadoria/enderecos.json" || /\.(png|webp)$/.test(arquivo) || !existsSync(join(RAIZ, arquivo))) continue;
   if (dominioNoTexto(readFileSync(join(RAIZ, arquivo), "utf8"), dominios).length) erros.push(`domínio de vítima em ${arquivo}`);
 }
 if (erros.length) falhar(erros);
@@ -169,6 +171,7 @@ rmSync(destino, { recursive: true, force: true });
 mkdirSync(destino, { recursive: true });
 writeFileSync(join(destino, "resumo.json"), JSON.stringify(saida.resumo));
 writeFileSync(join(destino, "grupos.json"), JSON.stringify(saida.grupos));
+writeFileSync(join(destino, "enderecos.json"), JSON.stringify(saida.listaDeEnderecos));
 for (const [nome, periodo] of Object.entries(saida.periodos)) {
   writeFileSync(join(destino, `periodo-${nome}.json`), JSON.stringify(periodo));
 }

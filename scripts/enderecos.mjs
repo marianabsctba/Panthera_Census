@@ -1,16 +1,20 @@
-// Atualiza, uma vez por semana, os endereços dos sites de vazamento dos grupos ativos (RansomLook, CC BY 4.0).
-// A consulta traz capturas de tela e pesa megabytes por grupo: daí a pausa e a frequência baixa.
+// Atualiza os endereços dos grupos (RansomLook, CC BY 4.0), ativos ou não.
+// Sem argumento, revê os grupos ativos em 90 dias. Com --todos, revê todos os grupos.
+// A consulta traz capturas de tela e pesa megabytes por grupo: daí a pausa e a varredura completa só uma vez por mês.
 // Só o endereço sai daqui. Títulos, publicações e capturas ficam em memória e somem.
+// Servidores de arquivos são só contados. Com --arquivos=caminho, a lista deles vai para um arquivo fora do repositório.
 import { setDefaultResultOrder } from "node:dns";
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { enderecosDoGrupo } from "./texto.mjs";
+import { lerLocais } from "./texto.mjs";
 
 const API = "https://www.ransomlook.io/api";
 const CABECALHOS = { "user-agent": "Panthera Census (github.com/marianabsctba/Panthera_Census)" };
 const PAUSA = 2000;
-const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
+const DESTINO = join(dirname(fileURLToPath(import.meta.url)), "..", "curadoria", "enderecos.json");
+const todos = process.argv.includes("--todos");
+const destinoArquivos = process.argv.find((a) => a.startsWith("--arquivos="))?.slice(11);
 
 setDefaultResultOrder("ipv4first");
 
@@ -20,28 +24,33 @@ async function obter(caminho) {
   return resposta.json();
 }
 
-const { posts } = await obter("/posts?days=90");
-const ativos = [...new Set(posts.map((p) => p.group_name))].sort();
-console.log(`${ativos.length} grupos ativos em 90 dias.`);
+const nomes = todos
+  ? (await obter("/groups")).sort()
+  : [...new Set((await obter("/posts?days=90")).posts.map((p) => p.group_name))].sort();
+console.log(`${nomes.length} grupos para consultar.`);
 
-const grupos = {};
+const anterior = existsSync(DESTINO) ? JSON.parse(readFileSync(DESTINO, "utf8")) : { grupos: {} };
+const grupos = { ...anterior.grupos };
+const arquivos = {};
 let falhas = 0;
-for (const nome of ativos) {
+for (const nome of nomes) {
   try {
     const [grupo] = await obter(`/group/${encodeURIComponent(nome)}`);
-    const enderecos = enderecosDoGrupo(grupo?.locations);
-    if (enderecos.length) grupos[nome] = enderecos;
+    const lido = lerLocais(grupo?.locations);
+    grupos[nome] = { arquivos: lido.arquivos.length, enderecos: lido.enderecos };
+    if (lido.arquivos.length) arquivos[nome] = lido.arquivos;
   } catch {
-    falhas++;
+    falhas++; // O grupo fica com o que já tinha.
   }
   await new Promise((r) => setTimeout(r, PAUSA));
 }
-// Falha geral não pode apagar a lista da semana anterior.
-if (falhas > ativos.length / 2) {
-  console.error(`Muitas falhas (${falhas} de ${ativos.length}): a lista anterior foi mantida.`);
+if (falhas > nomes.length / 2) {
+  console.error(`Muitas falhas (${falhas} de ${nomes.length}): a lista anterior foi mantida.`);
   process.exit(1);
 }
 
-const saida = { verificado: new Date().toISOString().slice(0, 10), grupos };
-writeFileSync(join(raiz, "curadoria", "enderecos.json"), `${JSON.stringify(saida, null, 0).replace(/\],/g, "],\n")}\n`);
-console.log(`${Object.keys(grupos).length} grupos com site no ar, ${falhas} falhas.`);
+const ordenado = Object.fromEntries(Object.entries(grupos).sort(([a], [b]) => a.localeCompare(b)));
+const saida = { verificado: new Date().toISOString().slice(0, 10), grupos: ordenado };
+writeFileSync(DESTINO, `${JSON.stringify(saida).replace(/\]\},/g, "]},\n")}\n`);
+if (destinoArquivos) writeFileSync(destinoArquivos, JSON.stringify(arquivos));
+console.log(`${Object.keys(ordenado).length} grupos na lista, ${falhas} falhas.`);

@@ -99,15 +99,28 @@ export function referenciasDoGrupo(perfil) {
   return [...new Set(urls)].filter((u) => fonteDaReferencia(u) && !/\.onion/i.test(u));
 }
 
-export const enderecoOnion = (texto) => /^[a-z2-7]{16,56}\.onion$/.test(String(texto));
+// Endereço puro: domínio, .onion ou IP, sem protocolo nem caminho que aponte para uma vítima.
+export const enderecoPuro = (texto) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?::\d{1,5})?$/.test(String(texto));
+export const TIPOS_DE_ENDERECO = ["Site de anúncio", "Chat", "Painel"];
 
-// Só o site de anúncio que está no ar. Servidor de arquivos, chat de negociação e painel ficam de fora.
-export function enderecosDoGrupo(locais, limite = 3) {
-  const nomes = (locais ?? [])
-    .filter((l) => l.available === true && !l.fs && !l.chat && !l.admin)
-    .map((l) => String(l.fqdn ?? "").trim().toLowerCase())
-    .filter(enderecoOnion);
-  return [...new Set(nomes)].slice(0, limite);
+// Todos os endereços, no ar ou não, com o tipo. Servidores de arquivos ficam à parte.
+export function lerLocais(locais) {
+  const enderecos = new Map();
+  const arquivos = new Set();
+  for (const l of locais ?? []) {
+    const e = String(l.fqdn ?? "").trim().toLowerCase();
+    if (!enderecoPuro(e)) continue;
+    if (l.fs) {
+      arquivos.add(e);
+      continue;
+    }
+    const visto = /^\d{4}-\d{2}-\d{2}/.test(String(l.updated)) ? String(l.updated).slice(0, 10) : null;
+    const item = { e, t: l.chat ? "Chat" : l.admin ? "Painel" : "Site de anúncio", ar: l.available === true, visto };
+    const atual = enderecos.get(e);
+    if (!atual || (item.ar && !atual.ar)) enderecos.set(e, item);
+  }
+  const lista = [...enderecos.values()].sort((a, b) => Number(b.ar) - Number(a.ar) || a.e.localeCompare(b.e));
+  return { enderecos: lista, arquivos: [...arquivos] };
 }
 
 export const nomeExato = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]/g, "");

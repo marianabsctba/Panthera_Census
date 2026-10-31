@@ -124,5 +124,17 @@ export interface Grupo {
   vulnerabilidades: [string, string][];
   nomeRansomLook: string | null;
   referencias: string[];
-  enderecos: string[];
+}
+
+export interface Endereco {
+  e: string;
+  t: string;
+  ar: boolean;
+  visto: string | null;
+}
+
+export interface EnderecosDoGrupo {
+  nome: string;
+  arquivos: number;
+  enderecos: Endereco[];
 }
