@@ -1,6 +1,6 @@
 // A trava: o que sai só passa se cada texto for conhecido e cada recorte tiver K casos ou mais.
 import { K, OUTROS, TODOS_OS_SETORES } from "./agregar.mjs";
-import { DIAS, FAIXAS, FONTES_DE_PESQUISA, NOMES_CATEGORIAS, NOMES_SITUACOES, fonteDaReferencia } from "./texto.mjs";
+import { DIAS, FAIXAS, FONTES_DE_PESQUISA, NOMES_CATEGORIAS, NOMES_SITUACOES, enderecoOnion, fonteDaReferencia } from "./texto.mjs";
 
 const FORMATOS = [
   /^\d{4}$/, // ano
@@ -35,6 +35,9 @@ export function validarSaida(saida, { grupos, paises, ferramentas = [], produtos
         // Link só de fonte de pesquisa conhecida: nunca o endereço de um grupo ou de uma vítima.
         if (k === "referencias") {
           for (const url of v) if (!fonteDaReferencia(url) || /\.onion/i.test(url)) erros.push(`link não autorizado em ${caminho}`);
+        } else if (k === "enderecos") {
+          // Endereço de grupo só neste campo e só no formato puro, sem caminho que aponte para uma vítima.
+          for (const e of v) if (!enderecoOnion(e)) erros.push(`endereço fora do formato em ${caminho}`);
         } else percorrer(v, `${caminho}.${k}`);
       }
     }

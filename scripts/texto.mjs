@@ -99,6 +99,17 @@ export function referenciasDoGrupo(perfil) {
   return [...new Set(urls)].filter((u) => fonteDaReferencia(u) && !/\.onion/i.test(u));
 }
 
+export const enderecoOnion = (texto) => /^[a-z2-7]{16,56}\.onion$/.test(String(texto));
+
+// Só o site de anúncio que está no ar. Servidor de arquivos, chat de negociação e painel ficam de fora.
+export function enderecosDoGrupo(locais, limite = 3) {
+  const nomes = (locais ?? [])
+    .filter((l) => l.available === true && !l.fs && !l.chat && !l.admin)
+    .map((l) => String(l.fqdn ?? "").trim().toLowerCase())
+    .filter(enderecoOnion);
+  return [...new Set(nomes)].slice(0, limite);
+}
+
 export const nomeExato = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]/g, "");
 
 // Tabelas em Markdown: devolve as células de cada linha de dados.

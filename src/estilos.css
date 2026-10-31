@@ -205,3 +205,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border: 1px solid var(--rosa); border-radius: 8px; text-decoration: none; overflow-wrap: anywhere;
 }
 .link-pesquisa:hover { background: var(--fundo); }
+.enderecos { display: flex; flex-direction: column; gap: 6px; }
+.endereco { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.endereco code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.8rem; overflow-wrap: anywhere; min-width: 0; user-select: all; }

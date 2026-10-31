@@ -128,6 +128,7 @@ const saida = agregar({
   referencias: ler("curadoria/referencias.json").paises,
   gruposFonte,
   gruposRansomLook,
+  enderecos: ler("curadoria/enderecos.json"),
   matrizes: { ferramentas, vulnerabilidades },
   ecossistema: ecossistema && {
     grupos: ecossistema.groups,

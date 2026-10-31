@@ -233,7 +233,7 @@ function agregarPeriodo({ registros, revisao, pais, referencias }) {
 const ehRaas = (g) => g.type?.raas === true;
 
 // Perfil de cada grupo com K alegações ou mais. Endereços, contatos e carteiras não entram.
-function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pais, matrizes, inicio12m }) {
+function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, enderecos, pais, matrizes, inicio12m }) {
   const porNome = new Map();
   for (const g of gruposFonte) porNome.set(g.name, g);
   const noRansomLook = new Map(gruposRansomLook.map((n) => [nomeExato(n), n]));
@@ -273,6 +273,7 @@ function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pai
         vulnerabilidades: matrizes.vulnerabilidades.filter((v) => v.grupos.some((n) => chaves.has(nomeDeGrupo(n)))).map((v) => [v.cve, v.produto]),
         nomeRansomLook: noRansomLook.get(nomeExato(nome)) ?? noRansomLook.get(nomeExato(g.altname ?? "")) ?? null,
         referencias: referenciasDoGrupo(g.profile),
+        enderecos: enderecos.grupos[noRansomLook.get(nomeExato(nome)) ?? noRansomLook.get(nomeExato(g.altname ?? ""))] ?? [],
       };
     })
     .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
@@ -289,7 +290,7 @@ function perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pai
  * @param matrizes { ferramentas, vulnerabilidades }, vazias se a fonte falhar
  * @param ecossistema totais do RansomLook, ou null
  */
-export function agregar({ registros, correcoes, chave, pais, anpd, referencias = {}, gruposFonte = [], gruposRansomLook = [], matrizes = { ferramentas: [], vulnerabilidades: [] }, ecossistema = null }) {
+export function agregar({ registros, correcoes, chave, pais, anpd, referencias = {}, gruposFonte = [], gruposRansomLook = [], enderecos = { verificado: null, grupos: {} }, matrizes = { ferramentas: [], vulnerabilidades: [] }, ecossistema = null }) {
   const fim = registros.reduce((m, x) => (x.discovered.slice(0, 10) > m ? x.discovered.slice(0, 10) : m), "");
   const inicio12m = inicioDoPeriodo(fim);
 
@@ -316,7 +317,7 @@ export function agregar({ registros, correcoes, chave, pais, anpd, referencias =
   for (const x of [...registros].sort((a, b) => a.discovered.localeCompare(b.discovered))) {
     if (!primeira.has(x.group_name)) primeira.set(x.group_name, x.discovered.slice(0, 4));
   }
-  const grupos = perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, pais, matrizes, inicio12m });
+  const grupos = perfisDeGrupos({ registros, revisao, gruposFonte, gruposRansomLook, enderecos, pais, matrizes, inicio12m });
 
   const usoDeFerramentas = matrizes.ferramentas
     .map((f) => ({ nome: f.nome, categoria: f.categoria, grupos: new Set(f.grupos.map(nomeDeGrupo)).size }))
@@ -343,6 +344,7 @@ export function agregar({ registros, correcoes, chave, pais, anpd, referencias =
       gruposNovos: [...contar([...primeira.values()], (a) => a).entries()].sort((a, b) => a[0].localeCompare(b[0])),
       tipos: { raas: gruposFonte.filter(ehRaas).length, comLinhagem: gruposFonte.filter((g) => g.lineage).length, sinalizados: gruposFonte.filter((g) => grupoSinalizado(g.description)).length, comSiteNoAr: gruposFonte.filter((g) => (g.locations ?? []).some((s) => s.available)).length, total: gruposFonte.length },
       ecossistema,
+      enderecosVerificados: enderecos.verificado,
       ferramentas: usoDeFerramentas,
       vulnerabilidades: topoDeCves,
       totaisMatrizes: { ferramentas: matrizes.ferramentas.length, vulnerabilidades: usoDeCves.size },

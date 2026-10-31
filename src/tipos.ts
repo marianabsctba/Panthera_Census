@@ -99,6 +99,7 @@ export interface Resumo {
   ferramentas: { nome: string; categoria: string; grupos: number }[];
   vulnerabilidades: { cve: string; produto: string; grupos: number }[];
   totaisMatrizes: { ferramentas: number; vulnerabilidades: number };
+  enderecosVerificados: string | null;
   anpd: Anpd;
 }
 
@@ -123,4 +124,5 @@ export interface Grupo {
   vulnerabilidades: [string, string][];
   nomeRansomLook: string | null;
   referencias: string[];
+  enderecos: string[];
 }

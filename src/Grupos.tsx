@@ -1,10 +1,26 @@
 import { useMemo, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Barras, Colunas } from "./Graficos";
-import { inteiro, nomeDoMes } from "./formato";
+import { data, inteiro, nomeDoMes } from "./formato";
 import type { Grupo, Resumo } from "./tipos";
 
-function Perfil({ g }: { g: Grupo }) {
+function Endereco({ valor }: { valor: string }) {
+  const [copiado, setCopiado] = useState(false);
+  const copiar = () => {
+    navigator.clipboard?.writeText(valor).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1500);
+    }).catch(() => undefined);
+  };
+  return (
+    <div className="endereco">
+      <code>{valor}</code>
+      <button className="aba" onClick={copiar}>{copiado ? "Copiado" : "Copiar"}</button>
+    </div>
+  );
+}
+
+function Perfil({ g, verificado }: { g: Grupo; verificado: string | null }) {
   const porCategoria = useMemo(() => {
     const mapa = new Map<string, string[]>();
     for (const [categoria, nome] of g.ferramentas) mapa.set(categoria, [...(mapa.get(categoria) ?? []), nome]);
@@ -34,7 +50,17 @@ function Perfil({ g }: { g: Grupo }) {
           {g.nomeRansomLook && <a className="link-pesquisa" href={`https://www.ransomlook.io/group/${encodeURIComponent(g.nomeRansomLook)}`} target="_blank" rel="noopener noreferrer">Ficha no RansomLook <ArrowUpRight size={14} /></a>}
           {g.referencias.map((url) => <a key={url} className="link-pesquisa" href={url} target="_blank" rel="noopener noreferrer">Relatório: {new URL(url).hostname.replace(/^www\./, "")} <ArrowUpRight size={14} /></a>)}
         </div>
-        <p className="nota">As fichas são de terceiros e listam os endereços do grupo e as vítimas alegadas. Os sites dos grupos são operados por criminosos e podem ter dados roubados: acesse só em ambiente isolado, com finalidade legítima, e sem baixar nada.</p>
+        {g.enderecos.length > 0 && (
+          <>
+            <h3>Site de vazamento no ar</h3>
+            <div className="enderecos">
+              {g.enderecos.map((e) => <Endereco key={e} valor={e} />)}
+            </div>
+            {verificado && <p className="nota">Verificado pelo <a href="https://www.ransomlook.io" target="_blank" rel="noopener noreferrer">RansomLook</a> (CC BY 4.0) e atualizado aqui em {data(verificado)}. Esses endereços mudam com frequência.</p>}
+          </>
+        )}
+        <p className="aviso">Sites de grupos são operados por criminosos e podem ter dados roubados, inclusive de saúde e de crianças. Só para pesquisa legítima: acesse em ambiente isolado, não baixe nada e não contate o grupo. Abrir ou guardar dados roubados pode ter consequências legais. Os endereços ficam sem link de propósito, para ninguém cair lá por um clique.</p>
+        <p className="nota">As fichas são de terceiros e listam os endereços do grupo e as vítimas alegadas.</p>
       </div>
       <div className="duas">
         <div><h3>Setores mais citados</h3><Barras linhas={g.setores} /></div>
@@ -128,7 +154,7 @@ export default function Grupos({ grupos, resumo }: { grupos: Grupo[]; resumo: Re
               {lista.length === 0 && <p className="nota">Nenhum grupo com esse nome.</p>}
             </div>
           </div>
-          {atual && <Perfil g={atual} />}
+          {atual && <Perfil g={atual} verificado={resumo.enderecosVerificados} />}
         </div>
       </div>
     </section>

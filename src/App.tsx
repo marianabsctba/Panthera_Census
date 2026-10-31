@@ -311,7 +311,7 @@ function Conteudo({ r, grupos }: { r: Resumo; grupos: Grupo[] }) {
           <li>Quem paga o resgate tende a não aparecer em site de vazamento, então a base mostra só uma parte dos ataques.</li>
           <li>País e setor vêm da fonte e têm erros. Na leitura dos casos do Brasil, cerca de 8% eram de outro país e 18% estavam no setor errado. Quando a informação falta, fica como não informado.</li>
           <li>O site mostra apenas números somados. Nomes, sites e links de vítimas ficam fora dele e do repositório.</li>
-          <li>Grupos são citados pelo nome porque são os autores das alegações. Endereços, contatos e carteiras deles ficam de fora.</li>
+          <li>Grupos são citados pelo nome porque são os autores das alegações. O perfil traz o endereço do site de anúncio no ar, para pesquisa. Servidores de arquivos, contatos e carteiras ficam de fora.</li>
           <li>Países com mais empresas aparecem mais. Por isso, o mapa também mede por habitante e por PIB.</li>
         </ul>
       </section>
@@ -361,7 +361,7 @@ export default function App() {
       </main>
       <footer className="rodape">
         <span>Source: <Fonte /></span>
-        <span>Ferramentas e CVEs: BushidoUK. Totais do submundo: RansomLook. Oficial: ANPD. População e PIB: Banco Mundial.</span>
+        <span>Ferramentas e CVEs: BushidoUK. Endereços e totais do submundo: RansomLook. Oficial: ANPD. População e PIB: Banco Mundial.</span>
         <a href="https://github.com/marianabsctba/Panthera_Census/issues" target="_blank" rel="noreferrer">Pedir correção ou remoção</a>
         <a href="https://github.com/marianabsctba/Panthera_Census" target="_blank" rel="noreferrer"><Github size={16} /> Código aberto</a>
       </footer>

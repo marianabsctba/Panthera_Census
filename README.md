@@ -18,7 +18,8 @@ Tudo o que aparece aqui é **alegação de criminoso em site de vazamento, não 
 
 - Site estático, sem servidor, sem login e sem chave de acesso, publicado no GitHub Pages. A consulta roda no navegador.
 - Um GitHub Action roda todo dia, baixa as bases públicas e calcula os números somados. Se uma fonte complementar cair, só aquela seção fica vazia naquele dia.
-- Endereços `.onion`, contatos e carteiras de grupos não entram, mesmo estando nas fontes. Cada perfil de grupo aponta para as fichas públicas dele no Ransomware.live e no RansomLook, onde quem pesquisa encontra os endereços, e para relatórios de fontes conhecidas.
+- Cada perfil de grupo aponta para as fichas públicas dele no Ransomware.live e no RansomLook e para relatórios de fontes conhecidas.
+- Para pesquisa, o perfil também traz até 3 endereços `.onion` do site de anúncio que está no ar, vindos do RansomLook (CC BY 4.0), em texto e sem link. Servidores de arquivos, chats de negociação, painéis, contatos e carteiras não entram. A lista fica em `curadoria/enderecos.json`, atualizada uma vez por semana por `scripts/enderecos.mjs`, porque cada consulta pesa megabytes e o projeto de origem é voluntário.
 - **O dado bruto nunca entra no repositório nem no site.** Ele existe só na memória da execução do Action. Os logs são públicos e não imprimem registro nenhum.
 - `scripts/trava.mjs` barra a publicação se aparecer texto que não seja nome de grupo, país, setor, ferramenta, data ou rótulo conhecido, se um recorte tiver menos de 3 casos, se um arquivo versionado citar o site de uma vítima ou se a fonte vier cortada. Nesse caso, o site fica com os números do dia anterior.
 - `historico/resumo.csv` guarda só os totais de cada dia.

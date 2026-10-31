@@ -1,0 +1,33 @@
+name: Atualizar endereços dos grupos
+
+on:
+  workflow_dispatch:
+  # Uma vez por semana: a consulta é pesada e o projeto de origem é voluntário.
+  schedule:
+    - cron: "0 9 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # Só os endereços vão para o arquivo. O log não imprime nenhum.
+      - run: node scripts/enderecos.mjs
+      - name: Guardar a lista da semana
+        run: |
+          git config user.name marianabsctba
+          git config user.email 62853909+marianabsctba@users.noreply.github.com
+          git add curadoria/enderecos.json
+          git diff --cached --quiet || git commit -m "chore(dados): atualiza os endereços dos grupos"
+          git pull --rebase
+          git push

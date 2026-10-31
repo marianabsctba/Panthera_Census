@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { agregar, chaveOpaca, inicioDoPeriodo, semPequenos, wilson } from "./agregar.mjs";
 import {
-  faixaAtraso, faixaFaturamento, faixaFuncionarios, faixaVolume, faturamentoEmDolar, funcionarios,
+  enderecosDoGrupo, faixaAtraso, faixaFaturamento, faixaFuncionarios, faixaVolume, faturamentoEmDolar, funcionarios,
   grupoSinalizado, lerFerramentas, lerVulnerabilidades, nomeDeGrupo, volumeEmGb,
 } from "./texto.mjs";
 import { dominioNoTexto, validarCorrecoes, validarFonte, validarSaida } from "./trava.mjs";
@@ -104,6 +104,26 @@ describe("agregar", () => {
     expect(JSON.stringify(saida)).not.toMatch(/Empresa|\.onion/);
     expect(saida.resumo.tipos.raas).toBe(1);
     expect(g.nomeRansomLook).toBeNull();
+  });
+
+  it("só publica site de anúncio no ar, nunca arquivos, chat ou painel", () => {
+    const onion = (c) => `${c.repeat(56)}.onion`;
+    const locais = [
+      { fqdn: onion("a"), available: true },
+      { fqdn: onion("b"), available: false },
+      { fqdn: onion("c"), available: true, fs: true },
+      { fqdn: onion("d"), available: true, chat: true },
+      { fqdn: onion("e"), available: true, admin: true },
+      { fqdn: "31.41.244.10", available: true },
+    ];
+    expect(enderecosDoGrupo(locais)).toEqual([onion("a")]);
+    const saida = agregar({
+      registros: base(), correcoes: {}, chave: null, pais, anpd, gruposRansomLook: ["Grupo A"],
+      enderecos: { verificado: "2026-10-31", grupos: { "Grupo A": [onion("a")] } },
+    });
+    expect(saida.grupos.find((x) => x.nome === "grupo-a").enderecos).toEqual([onion("a")]);
+    expect(saida.grupos.find((x) => x.nome === "grupo-b")).toBeUndefined();
+    expect(saida.resumo.enderecosVerificados).toBe("2026-10-31");
   });
 
   it("liga o grupo à ficha externa e filtra os relatórios", () => {
@@ -210,6 +230,21 @@ describe("trava", () => {
     expect(comLink("http://abc123.onion/vazamentos").length).toBeGreaterThan(0);
     expect(comLink("https://cisa.gov.exemplo.onion/x").length).toBeGreaterThan(0);
     expect(comLink("https://site-qualquer.example/x").length).toBeGreaterThan(0);
+  });
+
+  it("só aceita endereço puro de site de grupo no campo próprio", () => {
+    const onion = `${"a".repeat(56)}.onion`;
+    const comEndereco = (valor) => {
+      const saida = limpa();
+      saida.grupos[0].enderecos = [valor];
+      return validarSaida(saida, permitidos);
+    };
+    expect(comEndereco(onion)).toEqual([]);
+    expect(comEndereco(`http://${onion}/vitima-ficticia`).length).toBeGreaterThan(0);
+    expect(comEndereco("site-qualquer.example").length).toBeGreaterThan(0);
+    const fora = limpa();
+    fora.grupos[0].outroNome = onion;
+    expect(validarSaida(fora, permitidos).length).toBeGreaterThan(0);
   });
 
   it("barra correção com nome em vez de código opaco", () => {
