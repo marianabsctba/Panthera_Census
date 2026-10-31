@@ -1,6 +1,6 @@
 // A trava: o que sai só passa se cada texto for conhecido e cada recorte tiver K casos ou mais.
 import { K, OUTROS, TODOS_OS_SETORES } from "./agregar.mjs";
-import { DIAS, FAIXAS, NOMES_CATEGORIAS, NOMES_SITUACOES } from "./texto.mjs";
+import { DIAS, FAIXAS, FONTES_DE_PESQUISA, NOMES_CATEGORIAS, NOMES_SITUACOES, fonteDaReferencia } from "./texto.mjs";
 
 const FORMATOS = [
   /^\d{4}$/, // ano
@@ -31,7 +31,12 @@ export function validarSaida(saida, { grupos, paises, ferramentas = [], produtos
     } else if (Array.isArray(valor)) {
       valor.forEach((v, i) => percorrer(v, `${caminho}[${i}]`));
     } else if (valor && typeof valor === "object") {
-      for (const [k, v] of Object.entries(valor)) percorrer(v, `${caminho}.${k}`);
+      for (const [k, v] of Object.entries(valor)) {
+        // Link só de fonte de pesquisa conhecida: nunca o endereço de um grupo ou de uma vítima.
+        if (k === "referencias") {
+          for (const url of v) if (!fonteDaReferencia(url) || /\.onion/i.test(url)) erros.push(`link não autorizado em ${caminho}`);
+        } else percorrer(v, `${caminho}.${k}`);
+      }
     }
   };
   percorrer(saida, "saida");
@@ -74,7 +79,7 @@ export function validarCorrecoes(correcoes) {
 }
 
 // Endereços que o projeto cita como fonte ou crédito, e que também podem constar como alegação.
-const INSTITUCIONAIS = new Set(["gov.br", "github.com", "ransomware.live", "naturalearthdata.com", "worldbank.org", "ransomlook.io", "githubusercontent.com"]);
+const INSTITUCIONAIS = new Set(["gov.br", "github.com", "ransomware.live", "naturalearthdata.com", "worldbank.org", "ransomlook.io", "githubusercontent.com", ...FONTES_DE_PESQUISA]);
 
 // Domínio de vítima em qualquer arquivo versionado barra a publicação.
 export function dominioNoTexto(texto, dominios) {

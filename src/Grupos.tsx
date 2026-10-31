@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ArrowUpRight } from "lucide-react";
 import { Barras, Colunas } from "./Graficos";
 import { inteiro, nomeDoMes } from "./formato";
 import type { Grupo, Resumo } from "./tipos";
@@ -26,6 +27,15 @@ function Perfil({ g }: { g: Grupo }) {
         <div className="numero"><strong>{inteiro(g.sitesNoAr)} de {inteiro(g.sites)}</strong><span>sites no ar</span></div>
       </div>
       <p className="nota">Primeira alegação em {nomeDoMes(g.primeira)}, última em {nomeDoMes(g.ultima)}.</p>
+      <div className="pesquisar">
+        <h3>Para pesquisar este grupo</h3>
+        <div className="etiquetas">
+          <a className="link-pesquisa" href={`https://www.ransomware.live/group/${encodeURIComponent(g.nome)}`} target="_blank" rel="noopener noreferrer">Ficha no Ransomware.live <ArrowUpRight size={14} /></a>
+          {g.nomeRansomLook && <a className="link-pesquisa" href={`https://www.ransomlook.io/group/${encodeURIComponent(g.nomeRansomLook)}`} target="_blank" rel="noopener noreferrer">Ficha no RansomLook <ArrowUpRight size={14} /></a>}
+          {g.referencias.map((url) => <a key={url} className="link-pesquisa" href={url} target="_blank" rel="noopener noreferrer">Relatório: {new URL(url).hostname.replace(/^www\./, "")} <ArrowUpRight size={14} /></a>)}
+        </div>
+        <p className="nota">As fichas são de terceiros e listam os endereços do grupo e as vítimas alegadas. Os sites dos grupos são operados por criminosos e podem ter dados roubados: acesse só em ambiente isolado, com finalidade legítima, e sem baixar nada.</p>
+      </div>
       <div className="duas">
         <div><h3>Setores mais citados</h3><Barras linhas={g.setores} /></div>
         <div><h3>Países mais citados</h3><Barras linhas={g.paises} /></div>

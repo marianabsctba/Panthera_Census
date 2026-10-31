@@ -103,6 +103,15 @@ describe("agregar", () => {
     expect(g.ferramentas).toEqual([["Exfiltração", "RClone"]]);
     expect(JSON.stringify(saida)).not.toMatch(/Empresa|\.onion/);
     expect(saida.resumo.tipos.raas).toBe(1);
+    expect(g.nomeRansomLook).toBeNull();
+  });
+
+  it("liga o grupo à ficha externa e filtra os relatórios", () => {
+    const gruposFonte = [{ name: "grupo-a", profile: ["[Relatório](https://www.cisa.gov/aviso-1)", "http://abc.onion/x", "https://site-qualquer.example/x"] }];
+    const saida = agregar({ registros: base(), correcoes: {}, chave: null, pais, anpd, gruposFonte, gruposRansomLook: ["Grupo A"] });
+    const g = saida.grupos.find((x) => x.nome === "grupo-a");
+    expect(g.nomeRansomLook).toBe("Grupo A");
+    expect(g.referencias).toEqual(["https://www.cisa.gov/aviso-1"]);
   });
 });
 
@@ -189,6 +198,18 @@ describe("trava", () => {
     const outra = limpa();
     outra.grupos[0].paises.push(["Brasil", 1]);
     expect(validarSaida(outra, permitidos)).toContain("recorte abaixo de 3 em perfil de grupo");
+  });
+
+  it("só aceita relatório de fonte conhecida, nunca endereço de grupo", () => {
+    const comLink = (url) => {
+      const saida = limpa();
+      saida.grupos[0].referencias = [url];
+      return validarSaida(saida, permitidos);
+    };
+    expect(comLink("https://www.cisa.gov/news-events/aviso")).toEqual([]);
+    expect(comLink("http://abc123.onion/vazamentos").length).toBeGreaterThan(0);
+    expect(comLink("https://cisa.gov.exemplo.onion/x").length).toBeGreaterThan(0);
+    expect(comLink("https://site-qualquer.example/x").length).toBeGreaterThan(0);
   });
 
   it("barra correção com nome em vez de código opaco", () => {

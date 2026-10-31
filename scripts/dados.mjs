@@ -17,6 +17,7 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 const VITIMAS = "https://data.ransomware.live/victims.json";
 const GRUPOS = "https://data.ransomware.live/groups.json";
 const ECOSSISTEMA = "https://www.ransomlook.io/api/stats";
+const GRUPOS_RANSOMLOOK = "https://www.ransomlook.io/api/groups";
 const MATRIZ_FERRAMENTAS = "https://raw.githubusercontent.com/BushidoUK/Ransomware-Tool-Matrix/main/Tools/";
 const MATRIZ_CVES = "https://raw.githubusercontent.com/BushidoUK/Ransomware-Vulnerability-Matrix/main/Vulnerabilities/";
 const CATEGORIAS_FERRAMENTAS = {
@@ -101,8 +102,9 @@ try {
 const errosFonte = validarFonte(registros, ultimoTotal());
 if (errosFonte.length) falhar(errosFonte);
 
-const [gruposFonte, ferramentas, vulnerabilidades, ecossistema] = await Promise.all([
+const [gruposFonte, gruposRansomLook, ferramentas, vulnerabilidades, ecossistema] = await Promise.all([
   opcional("grupos", () => baixar(GRUPOS), []),
+  opcional("grupos do RansomLook", () => baixar(GRUPOS_RANSOMLOOK), []),
   opcional("ferramentas", () => lerMatriz(MATRIZ_FERRAMENTAS, CATEGORIAS_FERRAMENTAS, lerFerramentas), []),
   opcional("vulnerabilidades", () => lerMatriz(MATRIZ_CVES, CATEGORIAS_CVES, lerVulnerabilidades), []),
   opcional("totais do ecossistema", () => baixar(ECOSSISTEMA), null),
@@ -125,6 +127,7 @@ const saida = agregar({
   anpd: ler("curadoria/anpd.json"),
   referencias: ler("curadoria/referencias.json").paises,
   gruposFonte,
+  gruposRansomLook,
   matrizes: { ferramentas, vulnerabilidades },
   ecossistema: ecossistema && {
     grupos: ecossistema.groups,
@@ -138,6 +141,7 @@ const saida = agregar({
 
 const grupos = new Set(registros.map((x) => x.group_name));
 for (const g of gruposFonte) for (const t of [g.name, g.altname, g.lineage]) if (t) grupos.add(t);
+for (const nome of gruposRansomLook) grupos.add(nome);
 const erros = validarSaida(saida, {
   grupos,
   paises: new Set(registros.map((x) => x.country).filter(Boolean).map(nomePais).filter(Boolean)),

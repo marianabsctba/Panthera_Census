@@ -79,6 +79,28 @@ export const grupoSinalizado = (descricao) =>
   /appears unreliable|fake group|fake victims|seems to recycle|suspected fraudulent/i.test(descricao ?? "");
 export const grupoApreendido = (meta, descricao) => /seized/i.test(`${meta ?? ""}`) || /site (was|has been) seized/i.test(descricao ?? "");
 
+// Relatórios sobre os grupos: só de quem pesquisa ou publica alerta, nunca o site do próprio grupo.
+export const FONTES_DE_PESQUISA = new Set([
+  "cisa.gov", "ic3.gov", "cert.ssi.gouv.fr", "thedfirreport.com", "cloud.google.com", "trendmicro.com",
+  "blog.talosintelligence.com", "microsoft.com", "theravenfile.com", "news.sophos.com", "unit42.paloaltonetworks.com",
+  "crowdstrike.com", "welivesecurity.com", "analyst1.com", "research.checkpoint.com", "bitdefender.com", "secureworks.com",
+  "blogs.blackberry.com", "sygnia.co", "symantec-enterprise-blogs.security.com", "blog.bushidotoken.net", "cybereason.com",
+  "labs.k7computing.com", "kroll.com",
+]);
+
+export function fonteDaReferencia(url) {
+  const m = /^https:\/\/(?:www\.)?([^/\s]+)\//i.exec(url);
+  const host = m?.[1].toLowerCase();
+  return host && FONTES_DE_PESQUISA.has(host) ? host : null;
+}
+
+export function referenciasDoGrupo(perfil) {
+  const urls = (perfil ?? []).map((p) => /https:\/\/[^\s)\]]+/i.exec(String(p))?.[0]).filter(Boolean);
+  return [...new Set(urls)].filter((u) => fonteDaReferencia(u) && !/\.onion/i.test(u));
+}
+
+export const nomeExato = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]/g, "");
+
 // Tabelas em Markdown: devolve as células de cada linha de dados.
 export function linhasDaTabela(markdown) {
   return markdown

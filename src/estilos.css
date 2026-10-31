@@ -199,3 +199,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .etiquetas-blocos { display: flex; flex-direction: column; gap: 8px; }
 .etiquetas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .etiqueta { padding: 1px 7px; border: 1px solid var(--borda); border-radius: 6px; font-size: 0.78rem; overflow-wrap: anywhere; }
+.pesquisar { display: flex; flex-direction: column; gap: 6px; }
+.link-pesquisa {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 4px 10px; font-size: 0.82rem;
+  border: 1px solid var(--rosa); border-radius: 8px; text-decoration: none; overflow-wrap: anywhere;
+}
+.link-pesquisa:hover { background: var(--fundo); }

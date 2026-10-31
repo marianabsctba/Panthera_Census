@@ -121,4 +121,6 @@ export interface Grupo {
   anos: Contagem[];
   ferramentas: [string, string][];
   vulnerabilidades: [string, string][];
+  nomeRansomLook: string | null;
+  referencias: string[];
 }
